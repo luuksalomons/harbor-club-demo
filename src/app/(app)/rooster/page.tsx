@@ -1,0 +1,321 @@
+import Link from "next/link";
+import { requireProfile } from "@/lib/auth";
+import { requireFeatureEnabled } from "@/lib/features";
+import { createClient } from "@/lib/supabase/server";
+import { startOfWeek, addDays, toDateParam, dayKey, DAG_NAMEN, NL_TIMEZONE } from "@/lib/dates";
+import { getSchoolYearsForProfile } from "@/lib/school-years";
+import { createScheduleItem, deleteScheduleItem } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
+
+type ScheduleItem = {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  starts_at: string;
+  ends_at: string;
+  teacher_id: string | null;
+  created_by: string | null;
+  profiles: { full_name: string } | null;
+};
+
+export default async function RoosterPage(props: {
+  searchParams: Promise<{ jaar?: string; week?: string }>;
+}) {
+  const { jaar, week } = await props.searchParams;
+  const profile = await requireProfile();
+  await requireFeatureEnabled("rooster");
+  const supabase = await createClient();
+  const canEdit = profile.role === "docent" || profile.role === "admin";
+  const canDelete = (item: { created_by: string | null }) =>
+    profile.role === "admin" || item.created_by === profile.id;
+
+  const schoolYears = await getSchoolYearsForProfile(supabase, profile);
+
+  const selectedYear =
+    schoolYears.find((y) => y.id === jaar) ??
+    schoolYears.find((y) => y.is_active) ??
+    schoolYears[0];
+
+  // Bepaal de standaard-week: de eerstvolgende week met een geplande les
+  // vanaf vandaag, anders de eerste week met een item, anders de huidige week.
+  let weekStart = week ? startOfWeek(new Date(week)) : null;
+  if (!weekStart && selectedYear) {
+    const now = new Date().toISOString();
+    const { data: upcoming } = await supabase
+      .from("schedule_items")
+      .select("starts_at")
+      .eq("school_year_id", selectedYear.id)
+      .gte("starts_at", now)
+      .order("starts_at", { ascending: true })
+      .limit(1);
+    const { data: earliest } = upcoming?.length
+      ? { data: upcoming }
+      : await supabase
+          .from("schedule_items")
+          .select("starts_at")
+          .eq("school_year_id", selectedYear.id)
+          .order("starts_at", { ascending: true })
+          .limit(1);
+    weekStart = earliest?.[0] ? startOfWeek(new Date(earliest[0].starts_at)) : startOfWeek(new Date());
+  }
+  weekStart = weekStart ?? startOfWeek(new Date());
+  const weekEnd = addDays(weekStart, 7);
+  const prevWeek = addDays(weekStart, -7);
+  const nextWeek = addDays(weekStart, 7);
+
+  const { data: items } = selectedYear
+    ? await supabase
+        .from("schedule_items")
+        .select(
+          "id, title, description, location, starts_at, ends_at, teacher_id, created_by, profiles!schedule_items_teacher_id_fkey(full_name)",
+        )
+        .eq("school_year_id", selectedYear.id)
+        .lt("starts_at", weekEnd.toISOString())
+        .gt("ends_at", weekStart.toISOString())
+        .order("starts_at", { ascending: true })
+        .returns<ScheduleItem[]>()
+    : { data: [] };
+
+  const teachers = canEdit
+    ? (
+        await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .eq("role", "docent")
+          .order("full_name")
+      ).data ?? []
+    : [];
+
+  // Items die langer dan een dag duren (vakanties/themaweken) los tonen
+  // van de dag-per-dag lijst.
+  const weekMarkers = (items ?? []).filter(
+    (item) => new Date(item.ends_at).getTime() - new Date(item.starts_at).getTime() > 24 * 60 * 60 * 1000,
+  );
+  const dayItems = (items ?? []).filter((item) => !weekMarkers.includes(item));
+
+  const byDay = new Map<string, ScheduleItem[]>();
+  for (const item of dayItems) {
+    const key = dayKey(item.starts_at);
+    if (!byDay.has(key)) byDay.set(key, []);
+    byDay.get(key)!.push(item);
+  }
+  const sortedDayKeys = [...byDay.keys()].sort();
+
+  const yearQuery = selectedYear ? `jaar=${selectedYear.id}&` : "";
+  const weekEndDate = addDays(weekStart, 6);
+  const weekLabel = `${weekStart.toLocaleDateString("nl-NL", { day: "numeric", month: "long" })} – ${weekEndDate.toLocaleDateString(
+    "nl-NL",
+    { day: "numeric", month: "long", year: "numeric" },
+  )}`;
+  // Kortere variant voor smalle schermen, anders past de weeknavigatie niet
+  // op één regel naast de pijltjes.
+  const weekLabelShort = `${weekStart.toLocaleDateString("nl-NL", { day: "numeric", month: "short" })} – ${weekEndDate.toLocaleDateString(
+    "nl-NL",
+    { day: "numeric", month: "short" },
+  )}`;
+  const defaultStart = `${toDateParam(weekStart)}T09:00`;
+  const defaultEnd = `${toDateParam(weekStart)}T12:00`;
+
+  return (
+    <div>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-primary">Rooster</h1>
+        {schoolYears.length > 1 && (
+          <div className="flex gap-2 text-sm">
+            {schoolYears.map((y) => (
+              <Link
+                key={y.id}
+                href={`/rooster?jaar=${y.id}`}
+                className={`rounded-md border px-3 py-1 ${
+                  selectedYear?.id === y.id
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-foreground/70"
+                }`}
+              >
+                {y.name}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {!selectedYear && (
+        <p className="text-foreground/60">
+          {canEdit
+            ? "Er is nog geen schooljaar aangemaakt. Ga naar Admin om er een toe te voegen."
+            : "Je bent nog niet aan een schooljaar toegevoegd. Neem contact op met de admin."}
+        </p>
+      )}
+
+      {selectedYear && (
+        <>
+          <div className="mb-6 flex flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 sm:justify-between sm:gap-3">
+            <Link
+              href={`/rooster?${yearQuery}week=${toDateParam(prevWeek)}`}
+              className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
+            >
+              ← <span className="hidden sm:inline">Vorige week</span>
+            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:gap-3">
+              <span className="hidden font-medium sm:inline">{weekLabel}</span>
+              <span className="font-medium sm:hidden">{weekLabelShort}</span>
+              <Link
+                href={`/rooster?${yearQuery}week=${toDateParam(startOfWeek(new Date()))}`}
+                className="text-xs text-foreground/50 hover:text-primary hover:underline"
+              >
+                Vandaag
+              </Link>
+            </div>
+            <Link
+              href={`/rooster?${yearQuery}week=${toDateParam(nextWeek)}`}
+              className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
+            >
+              <span className="hidden sm:inline">Volgende week</span> →
+            </Link>
+          </div>
+
+          {weekMarkers.length > 0 && (
+            <div className="mb-6 space-y-2">
+              {weekMarkers.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-medium text-accent"
+                >
+                  {item.title}
+                  {canDelete(item) && (
+                    <form action={deleteScheduleItem} className="mt-1">
+                      <input type="hidden" name="id" value={item.id} />
+                      <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Bezig...">
+                        Verwijderen
+                      </SubmitButton>
+                    </form>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {canEdit && (
+            <form
+              action={createScheduleItem}
+              className="mb-8 grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-2"
+            >
+              <input type="hidden" name="school_year_id" value={selectedYear.id} />
+              <input
+                name="title"
+                required
+                placeholder="Titel (bv. Les over dienen)"
+                className="rounded-md border border-border px-3 py-2 text-sm sm:col-span-2"
+              />
+              <label className="text-xs text-foreground/60">
+                Start
+                <input
+                  name="starts_at"
+                  type="datetime-local"
+                  required
+                  defaultValue={defaultStart}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="text-xs text-foreground/60">
+                Einde
+                <input
+                  name="ends_at"
+                  type="datetime-local"
+                  required
+                  defaultValue={defaultEnd}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                />
+              </label>
+              <input
+                name="location"
+                placeholder="Locatie"
+                className="rounded-md border border-border px-3 py-2 text-sm"
+              />
+              <select name="teacher_id" className="rounded-md border border-border px-3 py-2 text-sm">
+                <option value="">Geen docent</option>
+                {teachers.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.full_name}
+                  </option>
+                ))}
+              </select>
+              <SubmitButton
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground sm:col-span-2"
+                pendingText="Bezig..."
+              >
+                Toevoegen aan rooster
+              </SubmitButton>
+            </form>
+          )}
+
+          <div className="space-y-6">
+            {sortedDayKeys.length ? (
+              sortedDayKeys.map((key) => {
+                const date = new Date(key);
+                const dayLabel = `${DAG_NAMEN[date.getUTCDay()]} ${date.toLocaleDateString("nl-NL", {
+                  day: "numeric",
+                  month: "long",
+                  timeZone: "UTC",
+                })}`;
+                return (
+                  <div key={key}>
+                    <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-foreground/50">
+                      {dayLabel}
+                    </h2>
+                    <div className="space-y-2">
+                      {byDay.get(key)!.map((item) => {
+                        const teacher = item.profiles;
+                        return (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between rounded-lg border border-border bg-background p-4"
+                          >
+                            <div>
+                              <p className="font-medium">{item.title}</p>
+                              <p className="text-sm text-foreground/60">
+                                {new Date(item.starts_at).toLocaleTimeString("nl-NL", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  timeZone: NL_TIMEZONE,
+                                })}{" "}
+                                –{" "}
+                                {new Date(item.ends_at).toLocaleTimeString("nl-NL", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  timeZone: NL_TIMEZONE,
+                                })}
+                                {item.location ? ` · ${item.location}` : ""}
+                                {teacher ? ` · ${teacher.full_name}` : ""}
+                              </p>
+                              {item.description && (
+                                <p className="mt-1 whitespace-pre-wrap text-sm text-foreground/50">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            {canDelete(item) && (
+                              <form action={deleteScheduleItem}>
+                                <input type="hidden" name="id" value={item.id} />
+                                <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Bezig...">
+                                  Verwijderen
+                                </SubmitButton>
+                              </form>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-foreground/60">Geen geplande lessen deze week.</p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

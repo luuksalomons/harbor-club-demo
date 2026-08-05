@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/*
+ * Royal Mission huisstijl (bron: royal mission/huisstijl/Redesign 2025 (WIP)/
+ * Huisstijl Handboek - September '25.pdf). Portal gebruikt de kleurstelling
+ * van het hoofdmerk/Volwassenen: Ruby (primair) + Crimson/Garnet (donker) +
+ * Royal Gold (accent). Wijzigt de huisstijl later: pas alleen deze tokens
+ * aan, de rest van de app leest er alleen uit.
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --color-primary: #ca2127; /* Ruby */
+  --color-primary-dark: #961c1f; /* Crimson */
+  --color-primary-foreground: #ffffff;
+  --color-accent: #ba8f5a; /* Royal Gold */
+  --color-surface: #f7f5f4;
+  --color-border: #ededee; /* Gray (accentkleur uit de huisstijl) */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-accent: var(--color-accent);
+  --color-surface: var(--color-surface);
+  --color-border: var(--color-border);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-bricolage);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #171112;
+    --foreground: #ededed;
+    --color-surface: #241a1b;
+    --color-border: #3a2a2b;
+  }
+
+  /* De "Royal Arch"-golf (zie AuthHero/app-header) is een wit vormelement,
+     bedoeld om te verdwijnen tegen een lichte pagina-ondergrond. In donkere
+     modus is die ondergrond bijna zwart, dus zou de golf als een hard wit
+     balkje blijven hangen — verberg 'm dan liever helemaal. */
+  .brand-wave {
+    display: none;
+  }
+  /* Zonder de golf heeft de Ruby balk in donkere modus een dunne rand nodig
+     om niet zomaar over te lopen in de (bijna zwarte) pagina-ondergrond. */
+  .brand-header {
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading), var(--font-sans), sans-serif;
+}
