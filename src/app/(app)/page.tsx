@@ -4,6 +4,8 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getSchoolYearsForProfile } from "@/lib/school-years";
 import { dayKey, toDateParam, startOfWeek, WEEKDAY_NAMES, CLUB_TIMEZONE } from "@/lib/dates";
+import { Reveal } from "@/components/reveal";
+import { TiltCard } from "@/components/tilt-card";
 
 type UpcomingItem = {
   id: string;
@@ -76,87 +78,91 @@ export default async function HomePage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-lg border border-border bg-background p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-medium text-primary">Next activity day</h2>
-            {nextDayKeyValue && (
-              <Link
-                href={`/schedule?${selectedYear ? `jaar=${selectedYear.id}&` : ""}week=${toDateParam(
-                  startOfWeek(new Date(nextDayKeyValue)),
-                )}`}
-                className="text-xs text-foreground/50 hover:text-primary hover:underline"
-              >
-                View schedule
-              </Link>
-            )}
-          </div>
-          {!selectedYear ? (
-            <p className="text-sm text-foreground/60">
-              {profile.role === "student"
-                ? "You haven't been added to a group yet."
-                : "No group has been created yet."}
-            </p>
-          ) : !nextDayLabel ? (
-            <p className="text-sm text-foreground/60">No upcoming activity days found.</p>
-          ) : (
-            <>
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground/50">
-                {nextDayLabel}
-              </p>
-              <div className="space-y-2">
-                {nextDayItems.map((item) => {
-                  const organizer = item.profiles;
-                  return (
-                    <div key={item.id} className="text-sm">
-                      <span className="font-medium">{item.title}</span>
-                      <span className="text-foreground/60">
-                        {" · "}
-                        {new Date(item.starts_at).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          timeZone: CLUB_TIMEZONE,
-                        })}
-                        –
-                        {new Date(item.ends_at).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          timeZone: CLUB_TIMEZONE,
-                        })}
-                        {item.location ? ` · ${item.location}` : ""}
-                        {organizer ? ` · ${organizer.full_name}` : ""}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </section>
-
-        <section className="rounded-lg border border-border bg-background p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-medium text-primary">Latest news</h2>
-            <Link href="/news" className="text-xs text-foreground/50 hover:text-primary hover:underline">
-              All news
-            </Link>
-          </div>
-          {newsPosts?.length ? (
-            <div className="space-y-4">
-              {newsPosts.map((post) => (
-                <div key={post.id}>
-                  <p className="font-medium">{post.title}</p>
-                  <p className="line-clamp-2 text-sm text-foreground/60">{post.body}</p>
-                  <p className="mt-1 text-xs text-foreground/40">
-                    {post.profiles?.full_name ?? "Unknown"} ·{" "}
-                    {new Date(post.created_at).toLocaleDateString("en-GB")}
-                  </p>
-                </div>
-              ))}
+        <Reveal>
+          <TiltCard className="rounded-lg border border-border bg-background p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-medium text-primary">Next activity day</h2>
+              {nextDayKeyValue && (
+                <Link
+                  href={`/schedule?${selectedYear ? `jaar=${selectedYear.id}&` : ""}week=${toDateParam(
+                    startOfWeek(new Date(nextDayKeyValue)),
+                  )}`}
+                  className="text-xs text-foreground/50 hover:text-primary hover:underline"
+                >
+                  View schedule
+                </Link>
+              )}
             </div>
-          ) : (
-            <p className="text-sm text-foreground/60">No news posted yet.</p>
-          )}
-        </section>
+            {!selectedYear ? (
+              <p className="text-sm text-foreground/60">
+                {profile.role === "student"
+                  ? "You haven't been added to a group yet."
+                  : "No group has been created yet."}
+              </p>
+            ) : !nextDayLabel ? (
+              <p className="text-sm text-foreground/60">No upcoming activity days found.</p>
+            ) : (
+              <>
+                <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground/50">
+                  {nextDayLabel}
+                </p>
+                <div className="space-y-2">
+                  {nextDayItems.map((item) => {
+                    const organizer = item.profiles;
+                    return (
+                      <div key={item.id} className="text-sm">
+                        <span className="font-medium">{item.title}</span>
+                        <span className="text-foreground/60">
+                          {" · "}
+                          {new Date(item.starts_at).toLocaleTimeString("en-GB", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone: CLUB_TIMEZONE,
+                          })}
+                          –
+                          {new Date(item.ends_at).toLocaleTimeString("en-GB", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone: CLUB_TIMEZONE,
+                          })}
+                          {item.location ? ` · ${item.location}` : ""}
+                          {organizer ? ` · ${organizer.full_name}` : ""}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </TiltCard>
+        </Reveal>
+
+        <Reveal delayMs={120}>
+          <TiltCard className="rounded-lg border border-border bg-background p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-medium text-primary">Latest news</h2>
+              <Link href="/news" className="text-xs text-foreground/50 hover:text-primary hover:underline">
+                All news
+              </Link>
+            </div>
+            {newsPosts?.length ? (
+              <div className="space-y-4">
+                {newsPosts.map((post) => (
+                  <div key={post.id}>
+                    <p className="font-medium">{post.title}</p>
+                    <p className="line-clamp-2 text-sm text-foreground/60">{post.body}</p>
+                    <p className="mt-1 text-xs text-foreground/40">
+                      {post.profiles?.full_name ?? "Unknown"} ·{" "}
+                      {new Date(post.created_at).toLocaleDateString("en-GB")}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-foreground/60">No news posted yet.</p>
+            )}
+          </TiltCard>
+        </Reveal>
       </div>
     </div>
   );
