@@ -3,8 +3,7 @@ import { Inter, Bricolage_Grotesque } from "next/font/google";
 import { RegisterServiceWorker } from "./register-sw";
 import "./globals.css";
 
-// Royal Mission huisstijl: Inter voor leestekst, Bricolage Grotesque voor
-// koppen/kijktekst (zie royal mission/huisstijl/.../Huisstijl Handboek).
+// Harbor Club demo: Inter for body text, Bricolage Grotesque for headings.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#171112" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1418" },
   ],
 };
 
