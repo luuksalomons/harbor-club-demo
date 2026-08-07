@@ -28,7 +28,7 @@ export async function createScheduleItem(formData: FormData) {
     created_by: profile.id,
   });
 
-  revalidatePath("/rooster");
+  revalidatePath("/schedule");
 }
 
 // Docenten mogen alleen agendapunten verwijderen die zij zelf aanmaakten;
@@ -53,5 +53,5 @@ export async function deleteScheduleItem(formData: FormData) {
 
   await supabase.from("schedule_items").delete().eq("id", id);
 
-  revalidatePath("/rooster");
+  revalidatePath("/schedule");
 }

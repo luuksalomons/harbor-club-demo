@@ -19,7 +19,7 @@ type ScheduleItem = {
   profiles: { full_name: string } | null;
 };
 
-export default async function RoosterPage(props: {
+export default async function SchedulePage(props: {
   searchParams: Promise<{ jaar?: string; week?: string }>;
 }) {
   const { jaar, week } = await props.searchParams;
@@ -37,8 +37,8 @@ export default async function RoosterPage(props: {
     schoolYears.find((y) => y.is_active) ??
     schoolYears[0];
 
-  // Bepaal de standaard-week: de eerstvolgende week met een geplande les
-  // vanaf vandaag, anders de eerste week met een item, anders de huidige week.
+  // Default week: the next upcoming week with a scheduled item from today,
+  // otherwise the earliest week with any item, otherwise the current week.
   let weekStart = week ? startOfWeek(new Date(week)) : null;
   if (!weekStart && selectedYear) {
     const now = new Date().toISOString();
@@ -77,7 +77,7 @@ export default async function RoosterPage(props: {
         .returns<ScheduleItem[]>()
     : { data: [] };
 
-  const teachers = canEdit
+  const organizers = canEdit
     ? (
         await supabase
           .from("profiles")
@@ -87,8 +87,8 @@ export default async function RoosterPage(props: {
       ).data ?? []
     : [];
 
-  // Items die langer dan een dag duren (vakanties/themaweken) los tonen
-  // van de dag-per-dag lijst.
+  // Items spanning more than a day (e.g. trips/themed weeks) get shown
+  // separately from the day-by-day list.
   const weekMarkers = (items ?? []).filter(
     (item) => new Date(item.ends_at).getTime() - new Date(item.starts_at).getTime() > 24 * 60 * 60 * 1000,
   );
@@ -104,14 +104,14 @@ export default async function RoosterPage(props: {
 
   const yearQuery = selectedYear ? `jaar=${selectedYear.id}&` : "";
   const weekEndDate = addDays(weekStart, 6);
-  const weekLabel = `${weekStart.toLocaleDateString("nl-NL", { day: "numeric", month: "long" })} – ${weekEndDate.toLocaleDateString(
-    "nl-NL",
+  const weekLabel = `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "long" })} – ${weekEndDate.toLocaleDateString(
+    "en-GB",
     { day: "numeric", month: "long", year: "numeric" },
   )}`;
-  // Kortere variant voor smalle schermen, anders past de weeknavigatie niet
-  // op één regel naast de pijltjes.
-  const weekLabelShort = `${weekStart.toLocaleDateString("nl-NL", { day: "numeric", month: "short" })} – ${weekEndDate.toLocaleDateString(
-    "nl-NL",
+  // Shorter variant for narrow screens, otherwise the week navigation
+  // doesn't fit on one line next to the arrows.
+  const weekLabelShort = `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${weekEndDate.toLocaleDateString(
+    "en-GB",
     { day: "numeric", month: "short" },
   )}`;
   const defaultStart = `${toDateParam(weekStart)}T09:00`;
@@ -120,13 +120,13 @@ export default async function RoosterPage(props: {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-primary">Rooster</h1>
+        <h1 className="text-2xl font-semibold text-primary">Schedule</h1>
         {schoolYears.length > 1 && (
           <div className="flex gap-2 text-sm">
             {schoolYears.map((y) => (
               <Link
                 key={y.id}
-                href={`/rooster?jaar=${y.id}`}
+                href={`/schedule?jaar=${y.id}`}
                 className={`rounded-md border px-3 py-1 ${
                   selectedYear?.id === y.id
                     ? "border-primary bg-primary text-primary-foreground"
@@ -143,8 +143,8 @@ export default async function RoosterPage(props: {
       {!selectedYear && (
         <p className="text-foreground/60">
           {canEdit
-            ? "Er is nog geen schooljaar aangemaakt. Ga naar Admin om er een toe te voegen."
-            : "Je bent nog niet aan een schooljaar toegevoegd. Neem contact op met de admin."}
+            ? "No group has been created yet. Go to Admin to add one."
+            : "You haven't been added to a group yet. Contact the admin."}
         </p>
       )}
 
@@ -152,26 +152,26 @@ export default async function RoosterPage(props: {
         <>
           <div className="mb-6 flex flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 sm:justify-between sm:gap-3">
             <Link
-              href={`/rooster?${yearQuery}week=${toDateParam(prevWeek)}`}
+              href={`/schedule?${yearQuery}week=${toDateParam(prevWeek)}`}
               className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
             >
-              ← <span className="hidden sm:inline">Vorige week</span>
+              ← <span className="hidden sm:inline">Previous week</span>
             </Link>
             <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:gap-3">
               <span className="hidden font-medium sm:inline">{weekLabel}</span>
               <span className="font-medium sm:hidden">{weekLabelShort}</span>
               <Link
-                href={`/rooster?${yearQuery}week=${toDateParam(startOfWeek(new Date()))}`}
+                href={`/schedule?${yearQuery}week=${toDateParam(startOfWeek(new Date()))}`}
                 className="text-xs text-foreground/50 hover:text-primary hover:underline"
               >
-                Vandaag
+                Today
               </Link>
             </div>
             <Link
-              href={`/rooster?${yearQuery}week=${toDateParam(nextWeek)}`}
+              href={`/schedule?${yearQuery}week=${toDateParam(nextWeek)}`}
               className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
             >
-              <span className="hidden sm:inline">Volgende week</span> →
+              <span className="hidden sm:inline">Next week</span> →
             </Link>
           </div>
 
@@ -186,8 +186,8 @@ export default async function RoosterPage(props: {
                   {canDelete(item) && (
                     <form action={deleteScheduleItem} className="mt-1">
                       <input type="hidden" name="id" value={item.id} />
-                      <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Bezig...">
-                        Verwijderen
+                      <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
+                        Delete
                       </SubmitButton>
                     </form>
                   )}
@@ -205,7 +205,7 @@ export default async function RoosterPage(props: {
               <input
                 name="title"
                 required
-                placeholder="Titel (bv. Les over dienen)"
+                placeholder="Title (e.g. Board meeting)"
                 className="rounded-md border border-border px-3 py-2 text-sm sm:col-span-2"
               />
               <label className="text-xs text-foreground/60">
@@ -219,7 +219,7 @@ export default async function RoosterPage(props: {
                 />
               </label>
               <label className="text-xs text-foreground/60">
-                Einde
+                End
                 <input
                   name="ends_at"
                   type="datetime-local"
@@ -230,12 +230,12 @@ export default async function RoosterPage(props: {
               </label>
               <input
                 name="location"
-                placeholder="Locatie"
+                placeholder="Location"
                 className="rounded-md border border-border px-3 py-2 text-sm"
               />
               <select name="teacher_id" className="rounded-md border border-border px-3 py-2 text-sm">
-                <option value="">Geen docent</option>
-                {teachers.map((t) => (
+                <option value="">No organizer</option>
+                {organizers.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.full_name}
                   </option>
@@ -243,9 +243,9 @@ export default async function RoosterPage(props: {
               </select>
               <SubmitButton
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground sm:col-span-2"
-                pendingText="Bezig..."
+                pendingText="Adding..."
               >
-                Toevoegen aan rooster
+                Add to schedule
               </SubmitButton>
             </form>
           )}
@@ -254,7 +254,7 @@ export default async function RoosterPage(props: {
             {sortedDayKeys.length ? (
               sortedDayKeys.map((key) => {
                 const date = new Date(key);
-                const dayLabel = `${WEEKDAY_NAMES[date.getUTCDay()]} ${date.toLocaleDateString("nl-NL", {
+                const dayLabel = `${WEEKDAY_NAMES[date.getUTCDay()]} ${date.toLocaleDateString("en-GB", {
                   day: "numeric",
                   month: "long",
                   timeZone: "UTC",
@@ -266,7 +266,7 @@ export default async function RoosterPage(props: {
                     </h2>
                     <div className="space-y-2">
                       {byDay.get(key)!.map((item) => {
-                        const teacher = item.profiles;
+                        const organizer = item.profiles;
                         return (
                           <div
                             key={item.id}
@@ -275,19 +275,19 @@ export default async function RoosterPage(props: {
                             <div>
                               <p className="font-medium">{item.title}</p>
                               <p className="text-sm text-foreground/60">
-                                {new Date(item.starts_at).toLocaleTimeString("nl-NL", {
+                                {new Date(item.starts_at).toLocaleTimeString("en-GB", {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   timeZone: CLUB_TIMEZONE,
                                 })}{" "}
                                 –{" "}
-                                {new Date(item.ends_at).toLocaleTimeString("nl-NL", {
+                                {new Date(item.ends_at).toLocaleTimeString("en-GB", {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   timeZone: CLUB_TIMEZONE,
                                 })}
                                 {item.location ? ` · ${item.location}` : ""}
-                                {teacher ? ` · ${teacher.full_name}` : ""}
+                                {organizer ? ` · ${organizer.full_name}` : ""}
                               </p>
                               {item.description && (
                                 <p className="mt-1 whitespace-pre-wrap text-sm text-foreground/50">
@@ -298,8 +298,8 @@ export default async function RoosterPage(props: {
                             {canDelete(item) && (
                               <form action={deleteScheduleItem}>
                                 <input type="hidden" name="id" value={item.id} />
-                                <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Bezig...">
-                                  Verwijderen
+                                <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
+                                  Delete
                                 </SubmitButton>
                               </form>
                             )}
@@ -311,7 +311,7 @@ export default async function RoosterPage(props: {
                 );
               })
             ) : (
-              <p className="text-foreground/60">Geen geplande lessen deze week.</p>
+              <p className="text-foreground/60">No activities scheduled this week.</p>
             )}
           </div>
         </>
