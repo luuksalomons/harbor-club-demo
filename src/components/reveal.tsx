@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, type HTMLAttributes } from "react";
+import { useEffect, useRef, useState, type ElementType, type HTMLAttributes } from "react";
 
 // Fades and slides content in once it scrolls into view. Renders visible
 // immediately for prefers-reduced-motion (also enforced in CSS as the
 // authoritative fallback — see .reveal in globals.css).
 export function Reveal({
+  as: Tag = "div",
   className = "",
   style,
   delayMs = 0,
   ...props
-}: HTMLAttributes<HTMLDivElement> & { delayMs?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
+}: HTMLAttributes<HTMLElement> & { as?: ElementType; delayMs?: number }) {
+  const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export function Reveal({
   }, []);
 
   return (
-    <div
+    <Tag
       ref={ref}
       className={`reveal ${visible ? "reveal-visible" : ""} ${className}`}
       style={{ transitionDelay: visible && delayMs ? `${delayMs}ms` : undefined, ...style }}

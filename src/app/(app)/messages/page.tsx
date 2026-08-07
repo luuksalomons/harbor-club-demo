@@ -4,6 +4,8 @@ import { requireFeatureEnabled } from "@/lib/features";
 import { createClient } from "@/lib/supabase/server";
 import { sendMessage } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+import { Reveal } from "@/components/reveal";
+import { TiltCard } from "@/components/tilt-card";
 
 export default async function MessagesPage(props: {
   searchParams: Promise<{ met?: string }>;
@@ -57,7 +59,7 @@ export default async function MessagesPage(props: {
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-primary">Messages</h1>
       <div className="grid gap-4 sm:grid-cols-[240px_1fr]">
-        <aside className={`space-y-1 ${selectedContact ? "hidden sm:block" : ""}`}>
+        <Reveal as="aside" className={`space-y-1 ${selectedContact ? "hidden sm:block" : ""}`}>
           {contacts?.length ? (
             contacts.map((c) => {
               const unread = unreadByContact.get(c.id) ?? 0;
@@ -83,64 +85,62 @@ export default async function MessagesPage(props: {
           ) : (
             <p className="text-sm text-foreground/60">No other users yet.</p>
           )}
-        </aside>
+        </Reveal>
 
-        <section
-          className={`rounded-lg border border-border bg-background p-4 ${
-            !selectedContact ? "hidden sm:block" : ""
-          }`}
-        >
-          {selectedContact ? (
-            <>
-              <Link
-                href="/messages"
-                className="mb-3 inline-block text-sm text-foreground/60 hover:text-primary sm:hidden"
-              >
-                ← Back to contacts
-              </Link>
-              <h2 className="mb-4 font-medium">
-                Conversation with {selectedContact.full_name || selectedContact.email}
-              </h2>
-              <div className="mb-4 max-h-[50vh] space-y-2 overflow-y-auto">
-                {thread.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
-                      m.sender_id === profile.id
-                        ? "ml-auto bg-primary text-primary-foreground"
-                        : "bg-surface"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap">{m.body}</p>
-                    <p className="mt-1 text-[10px] opacity-70">
-                      {new Date(m.created_at).toLocaleString("en-GB")}
-                    </p>
-                  </div>
-                ))}
-                {thread.length === 0 && (
-                  <p className="text-sm text-foreground/60">No messages yet.</p>
-                )}
-              </div>
-              <form action={sendMessage} className="flex gap-2">
-                <input type="hidden" name="recipient_id" value={selectedContact.id} />
-                <input
-                  name="body"
-                  required
-                  placeholder="Type a message..."
-                  className="flex-1 rounded-md border border-border px-3 py-2 text-sm"
-                />
-                <SubmitButton
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-                  pendingText="Sending..."
+        <Reveal delayMs={120} className={!selectedContact ? "hidden sm:block" : ""}>
+          <TiltCard as="section" className="rounded-lg border border-border bg-background p-4">
+            {selectedContact ? (
+              <>
+                <Link
+                  href="/messages"
+                  className="mb-3 inline-block text-sm text-foreground/60 hover:text-primary sm:hidden"
                 >
-                  Send
-                </SubmitButton>
-              </form>
-            </>
-          ) : (
-            <p className="text-foreground/60">Choose a contact on the left to start a conversation.</p>
-          )}
-        </section>
+                  ← Back to contacts
+                </Link>
+                <h2 className="mb-4 font-medium">
+                  Conversation with {selectedContact.full_name || selectedContact.email}
+                </h2>
+                <div className="mb-4 max-h-[50vh] space-y-2 overflow-y-auto">
+                  {thread.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
+                        m.sender_id === profile.id
+                          ? "ml-auto bg-primary text-primary-foreground"
+                          : "bg-surface"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap">{m.body}</p>
+                      <p className="mt-1 text-[10px] opacity-70">
+                        {new Date(m.created_at).toLocaleString("en-GB")}
+                      </p>
+                    </div>
+                  ))}
+                  {thread.length === 0 && (
+                    <p className="text-sm text-foreground/60">No messages yet.</p>
+                  )}
+                </div>
+                <form action={sendMessage} className="flex gap-2">
+                  <input type="hidden" name="recipient_id" value={selectedContact.id} />
+                  <input
+                    name="body"
+                    required
+                    placeholder="Type a message..."
+                    className="flex-1 rounded-md border border-border px-3 py-2 text-sm"
+                  />
+                  <SubmitButton
+                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                    pendingText="Sending..."
+                  >
+                    Send
+                  </SubmitButton>
+                </form>
+              </>
+            ) : (
+              <p className="text-foreground/60">Choose a contact on the left to start a conversation.</p>
+            )}
+          </TiltCard>
+        </Reveal>
       </div>
     </div>
   );
