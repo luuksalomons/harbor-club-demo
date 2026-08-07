@@ -13,7 +13,7 @@ export default function PasswordForm() {
     <form action={formAction} className="max-w-sm space-y-3">
       <div>
         <label htmlFor="password" className="mb-1 block text-sm font-medium">
-          Nieuw wachtwoord
+          New password
         </label>
         <input
           id="password"
@@ -27,7 +27,7 @@ export default function PasswordForm() {
       </div>
       <div>
         <label htmlFor="confirm" className="mb-1 block text-sm font-medium">
-          Herhaal wachtwoord
+          Repeat password
         </label>
         <input
           id="confirm"
@@ -41,7 +41,7 @@ export default function PasswordForm() {
       </div>
 
       {state.error && <p className="text-sm text-primary-dark">{state.error}</p>}
-      {state.success && <p className="text-sm text-accent">Wachtwoord gewijzigd.</p>}
+      {state.success && <p className="text-sm text-accent">Password changed.</p>}
 
       <button
         type="submit"
@@ -49,7 +49,7 @@ export default function PasswordForm() {
         className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-wait disabled:opacity-60"
       >
         {pending && <Spinner className="h-3.5 w-3.5" />}
-        {pending ? "Bezig..." : "Wachtwoord wijzigen"}
+        {pending ? "Saving..." : "Change password"}
       </button>
     </form>
   );

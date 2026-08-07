@@ -4,25 +4,25 @@ import PasswordForm from "./password-form";
 import { SubmitButton } from "@/components/submit-button";
 
 const GENDERS = [
-  { value: "", label: "Zeg ik liever niet" },
-  { value: "man", label: "Man" },
-  { value: "vrouw", label: "Vrouw" },
-  { value: "anders", label: "Anders" },
+  { value: "", label: "Prefer not to say" },
+  { value: "man", label: "Male" },
+  { value: "vrouw", label: "Female" },
+  { value: "anders", label: "Other" },
 ];
 
-export default async function ProfielPage() {
+export default async function ProfilePage() {
   const profile = await requireProfile();
 
   return (
     <div className="space-y-10">
-      <h1 className="text-2xl font-semibold text-primary">Mijn profiel</h1>
+      <h1 className="text-2xl font-semibold text-primary">My Profile</h1>
 
       <section>
-        <h2 className="mb-3 font-medium">Persoonlijke gegevens</h2>
+        <h2 className="mb-3 font-medium">Personal details</h2>
         <form action={updateOwnProfile} className="max-w-sm space-y-3">
           <div>
             <label htmlFor="full_name" className="mb-1 block text-sm font-medium">
-              Naam
+              Name
             </label>
             <input
               id="full_name"
@@ -33,7 +33,7 @@ export default async function ProfielPage() {
           </div>
           <div>
             <label htmlFor="age" className="mb-1 block text-sm font-medium">
-              Leeftijd
+              Age
             </label>
             <input
               id="age"
@@ -47,7 +47,7 @@ export default async function ProfielPage() {
           </div>
           <div>
             <label htmlFor="gender" className="mb-1 block text-sm font-medium">
-              Geslacht
+              Gender
             </label>
             <select
               id="gender"
@@ -64,15 +64,15 @@ export default async function ProfielPage() {
           </div>
           <SubmitButton
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-            pendingText="Bezig..."
+            pendingText="Saving..."
           >
-            Opslaan
+            Save
           </SubmitButton>
         </form>
       </section>
 
       <section>
-        <h2 className="mb-3 font-medium">Wachtwoord</h2>
+        <h2 className="mb-3 font-medium">Password</h2>
         <PasswordForm />
       </section>
     </div>

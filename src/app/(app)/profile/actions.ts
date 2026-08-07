@@ -36,17 +36,17 @@ export async function updateOwnPassword(_prevState: unknown, formData: FormData)
   const confirm = String(formData.get("confirm") ?? "");
 
   if (password.length < 8) {
-    return { error: "Wachtwoord moet minstens 8 tekens zijn.", success: false };
+    return { error: "Password must be at least 8 characters.", success: false };
   }
   if (password !== confirm) {
-    return { error: "Wachtwoorden komen niet overeen.", success: false };
+    return { error: "Passwords don't match.", success: false };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return { error: "Kon wachtwoord niet wijzigen. Probeer het opnieuw.", success: false };
+    return { error: "Could not change password. Try again.", success: false };
   }
 
   return { error: "", success: true };
