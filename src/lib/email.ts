@@ -1,27 +1,16 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const FROM = process.env.EMAIL_FROM ?? "Royal Mission Portal <noreply@example.com>";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
-// E-mail is een melding, geen kritiek pad: een falende Resend-call mag het
-// versturen van een bericht of zorgaanvraag nooit blokkeren.
+// This demo never sends real email — Fiverr visitors trigger these calls
+// with fictional addresses, and standing up a verified Resend domain for a
+// project that isn't generating revenue yet isn't worth it. The calling
+// UI (Messages, Contact Requests) still shows its normal "sent" state,
+// since these functions resolve successfully either way. A real client
+// delivery swaps this file back to the Resend implementation unchanged —
+// see royal-mission-portal/src/lib/email.ts for that version.
 export async function sendNewMessageEmail(params: {
   to: string;
   senderName: string;
   preview: string;
 }) {
-  try {
-    await resend.emails.send({
-      from: FROM,
-      to: params.to,
-      subject: `Nieuw bericht van ${params.senderName}`,
-      text: `Je hebt een nieuw bericht ontvangen van ${params.senderName}:\n\n"${params.preview}"\n\nBekijk en beantwoord het bericht: ${APP_URL}/berichten`,
-    });
-  } catch (err) {
-    console.error("sendNewMessageEmail failed", err);
-  }
+  console.log(`[demo email mock] New message notification -> ${params.to}: "${params.preview}" from ${params.senderName}`);
 }
 
 export async function sendCareRequestEmail(params: {
@@ -30,14 +19,5 @@ export async function sendCareRequestEmail(params: {
   note: string;
 }) {
   if (params.to.length === 0) return;
-  try {
-    await resend.emails.send({
-      from: FROM,
-      to: params.to,
-      subject: `Zorggesprek aangevraagd door ${params.studentName}`,
-      text: `${params.studentName} heeft een zorggesprek aangevraagd.\n\nToelichting: ${params.note || "(geen toelichting)"}\n\nBekijk de aanvraag: ${APP_URL}/zorg`,
-    });
-  } catch (err) {
-    console.error("sendCareRequestEmail failed", err);
-  }
+  console.log(`[demo email mock] Contact request notification -> ${params.to.join(", ")}: ${params.studentName} — "${params.note}"`);
 }
