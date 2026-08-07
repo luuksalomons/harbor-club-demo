@@ -4,7 +4,7 @@ export function DemoBanner() {
       This is a live demo — all data resets automatically every night. Interested in this for your
       organization?{" "}
       <a
-        href="https://www.fiverr.com/"
+        href="mailto:mail@absoluukt.nl?subject=Harbor%20Club%20demo%20portal"
         target="_blank"
         rel="noopener noreferrer"
         className="underline underline-offset-2 hover:no-underline"
