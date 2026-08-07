@@ -1,13 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Role } from "@/lib/roles";
 
-export type Role = "student" | "docent" | "admin";
-
-export const ROLE_LABELS: Record<Role, string> = {
-  student: "Member",
-  docent: "Board",
-  admin: "Admin",
-};
+export type { Role } from "@/lib/roles";
+export { ROLE_LABELS } from "@/lib/roles";
 
 export type Profile = {
   id: string;

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Profile } from "@/lib/auth";
-import { ROLE_LABELS } from "@/lib/auth";
+import { ROLE_LABELS } from "@/lib/roles";
 import type { FeatureFlags } from "@/lib/features";
 import { signOut } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
