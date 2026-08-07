@@ -82,7 +82,7 @@ export async function setActiveSchoolYear(formData: FormData) {
   await supabase.from("school_years").update({ is_active: true }).eq("id", id);
 
   revalidatePath("/admin");
-  revalidatePath("/rooster");
+  revalidatePath("/schedule");
 }
 
 export async function enrollStudent(formData: FormData) {
@@ -95,7 +95,7 @@ export async function enrollStudent(formData: FormData) {
   await supabase.from("enrollments").insert({ student_id, school_year_id });
 
   revalidatePath("/admin");
-  revalidatePath("/rooster");
+  revalidatePath("/schedule");
 }
 
 export async function unenrollStudent(formData: FormData) {
@@ -107,7 +107,7 @@ export async function unenrollStudent(formData: FormData) {
   await supabase.from("enrollments").delete().eq("id", id);
 
   revalidatePath("/admin");
-  revalidatePath("/rooster");
+  revalidatePath("/schedule");
 }
 
 export async function setFeatureEnabled(formData: FormData) {

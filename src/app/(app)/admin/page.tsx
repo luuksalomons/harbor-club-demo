@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth";
+import { requireRole, ROLE_LABELS, type Role } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   inviteUser,
@@ -14,7 +14,7 @@ import {
 } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 
-const ROLES = ["student", "docent", "admin"] as const;
+const ROLES: Role[] = ["student", "docent", "admin"];
 
 export default async function AdminPage(props: {
   searchParams: Promise<{ jaar?: string }>;
@@ -48,17 +48,17 @@ export default async function AdminPage(props: {
         .eq("school_year_id", selectedYearId)
     : { data: [] };
 
-  const students = (users ?? []).filter((u) => u.role === "student");
+  const members = (users ?? []).filter((u) => u.role === "student");
   const enrolledIds = new Set((enrollments ?? []).map((e) => e.student_id));
-  const notEnrolled = students.filter((s) => !enrolledIds.has(s.id));
+  const notEnrolled = members.filter((s) => !enrolledIds.has(s.id));
 
   return (
     <div className="space-y-10">
       <h1 className="text-2xl font-semibold text-primary">Admin</h1>
 
-      {/* Gebruikers */}
+      {/* Users */}
       <section>
-        <h2 className="mb-3 font-medium">Gebruikers uitnodigen</h2>
+        <h2 className="mb-3 font-medium">Invite users</h2>
         <form
           action={inviteUser}
           className="mb-6 grid max-w-2xl gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-4"
@@ -67,30 +67,30 @@ export default async function AdminPage(props: {
             name="email"
             type="email"
             required
-            placeholder="E-mailadres"
+            placeholder="Email address"
             className="rounded-md border border-border px-3 py-2 text-sm sm:col-span-2"
           />
           <input
             name="full_name"
-            placeholder="Naam"
+            placeholder="Name"
             className="rounded-md border border-border px-3 py-2 text-sm"
           />
           <select name="role" className="rounded-md border border-border px-3 py-2 text-sm">
             {ROLES.map((r) => (
               <option key={r} value={r}>
-                {r}
+                {ROLE_LABELS[r]}
               </option>
             ))}
           </select>
           <SubmitButton
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground sm:col-span-4"
-            pendingText="Bezig..."
+            pendingText="Sending..."
           >
-            Uitnodiging versturen
+            Send invite
           </SubmitButton>
         </form>
 
-        <h2 className="mb-3 font-medium">Alle gebruikers</h2>
+        <h2 className="mb-3 font-medium">All users</h2>
         <div className="space-y-2">
           {users?.map((u) => (
             <div
@@ -98,7 +98,7 @@ export default async function AdminPage(props: {
               className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background p-3 text-sm"
             >
               <div>
-                <p className="font-medium">{u.full_name || "(geen naam)"}</p>
+                <p className="font-medium">{u.full_name || "(no name)"}</p>
                 <p className="text-xs text-foreground/50">{u.email}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -111,15 +111,15 @@ export default async function AdminPage(props: {
                   >
                     {ROLES.map((r) => (
                       <option key={r} value={r}>
-                        {r}
+                        {ROLE_LABELS[r]}
                       </option>
                     ))}
                   </select>
                   <SubmitButton
                     className="rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground"
-                    pendingText="Bezig..."
+                    pendingText="Saving..."
                   >
-                    Opslaan
+                    Save
                   </SubmitButton>
                 </form>
                 <form action={toggleZorgcoach}>
@@ -131,9 +131,9 @@ export default async function AdminPage(props: {
                         ? "border-accent bg-accent/20 text-accent"
                         : "border-border text-foreground/60"
                     }`}
-                    pendingText="Bezig..."
+                    pendingText="Saving..."
                   >
-                    {u.is_zorgcoach ? "Is zorgcoach" : "Maak zorgcoach"}
+                    {u.is_zorgcoach ? "On contact team" : "Add to contact team"}
                   </SubmitButton>
                 </form>
                 <form action={adminSetPassword} className="flex items-center gap-2">
@@ -142,14 +142,14 @@ export default async function AdminPage(props: {
                     type="password"
                     name="password"
                     minLength={8}
-                    placeholder="Nieuw wachtwoord"
+                    placeholder="New password"
                     className="w-36 rounded-md border border-border px-2 py-1 text-xs"
                   />
                   <SubmitButton
                     className="rounded-md border border-border px-2 py-1 text-xs text-foreground/60 hover:border-primary hover:text-primary"
-                    pendingText="Bezig..."
+                    pendingText="Saving..."
                   >
-                    Wachtwoord instellen
+                    Set password
                   </SubmitButton>
                 </form>
               </div>
@@ -158,12 +158,11 @@ export default async function AdminPage(props: {
         </div>
       </section>
 
-      {/* Paginabeheer */}
+      {/* Page management */}
       <section>
-        <h2 className="mb-3 font-medium">Paginabeheer</h2>
+        <h2 className="mb-3 font-medium">Page management</h2>
         <p className="mb-3 text-sm text-foreground/60">
-          Een uitgeschakelde pagina verdwijnt uit het menu en is niet meer bereikbaar voor
-          gebruikers.
+          A disabled page disappears from the menu and is no longer reachable by users.
         </p>
         <div className="max-w-md space-y-2">
           {features?.map((f) => (
@@ -172,7 +171,7 @@ export default async function AdminPage(props: {
               className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-3 text-sm"
             >
               <span>
-                {f.label} {!f.enabled && <span className="ml-2 text-xs text-primary-dark">uitgeschakeld</span>}
+                {f.label} {!f.enabled && <span className="ml-2 text-xs text-primary-dark">disabled</span>}
               </span>
               <form action={setFeatureEnabled}>
                 <input type="hidden" name="key" value={f.key} />
@@ -183,9 +182,9 @@ export default async function AdminPage(props: {
                       ? "border-accent bg-accent/20 text-accent"
                       : "border-border text-foreground/60"
                   }`}
-                  pendingText="Bezig..."
+                  pendingText="Saving..."
                 >
-                  {f.enabled ? "Ingeschakeld" : "Uitgeschakeld"}
+                  {f.enabled ? "Enabled" : "Disabled"}
                 </SubmitButton>
               </form>
             </div>
@@ -193,9 +192,9 @@ export default async function AdminPage(props: {
         </div>
       </section>
 
-      {/* Schooljaren */}
+      {/* Groups */}
       <section>
-        <h2 className="mb-3 font-medium">Schooljaren</h2>
+        <h2 className="mb-3 font-medium">Groups</h2>
         <form
           action={createSchoolYear}
           className="mb-4 flex max-w-md gap-2 rounded-lg border border-border bg-background p-4"
@@ -203,14 +202,14 @@ export default async function AdminPage(props: {
           <input
             name="name"
             required
-            placeholder="Bijv. 2026-2027"
+            placeholder="e.g. North Team"
             className="flex-1 rounded-md border border-border px-3 py-2 text-sm"
           />
           <SubmitButton
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-            pendingText="Bezig..."
+            pendingText="Adding..."
           >
-            Toevoegen
+            Add
           </SubmitButton>
         </form>
 
@@ -221,16 +220,13 @@ export default async function AdminPage(props: {
               className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3 text-sm"
             >
               <span>
-                {y.name} {y.is_active && <span className="ml-2 text-xs text-accent">actief</span>}
+                {y.name} {y.is_active && <span className="ml-2 text-xs text-accent">active</span>}
               </span>
               {!y.is_active && (
                 <form action={setActiveSchoolYear}>
                   <input type="hidden" name="id" value={y.id} />
-                  <SubmitButton
-                    className="rounded-md border border-border px-2 py-1 text-xs text-foreground/60"
-                    pendingText="Bezig..."
-                  >
-                    Maak actief
+                  <SubmitButton className="rounded-md border border-border px-2 py-1 text-xs text-foreground/60" pendingText="Saving...">
+                    Make active
                   </SubmitButton>
                 </form>
               )}
@@ -239,10 +235,10 @@ export default async function AdminPage(props: {
         </div>
       </section>
 
-      {/* Inschrijvingen */}
+      {/* Enrollments */}
       <section>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-medium">Studenten per schooljaar</h2>
+          <h2 className="font-medium">Members per group</h2>
           {schoolYears && schoolYears.length > 1 && (
             <div className="flex gap-2 text-sm">
               {schoolYears.map((y) => (
@@ -262,7 +258,7 @@ export default async function AdminPage(props: {
           )}
         </div>
         {!selectedYearId ? (
-          <p className="text-sm text-foreground/60">Maak eerst een schooljaar aan.</p>
+          <p className="text-sm text-foreground/60">Create a group first.</p>
         ) : (
           <div className="max-w-xl space-y-4">
             <form action={enrollStudent} className="flex gap-2">
@@ -272,7 +268,7 @@ export default async function AdminPage(props: {
                 required
                 className="flex-1 rounded-md border border-border px-3 py-2 text-sm"
               >
-                <option value="">Kies student...</option>
+                <option value="">Choose member...</option>
                 {notEnrolled.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.full_name || s.email}
@@ -281,33 +277,33 @@ export default async function AdminPage(props: {
               </select>
               <SubmitButton
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-                pendingText="Bezig..."
+                pendingText="Adding..."
               >
-                Toevoegen
+                Add
               </SubmitButton>
             </form>
 
             <div className="space-y-2">
               {enrollments?.length ? (
                 enrollments.map((e) => {
-                  const student = e.profiles as unknown as { full_name: string; email: string } | null;
+                  const member = e.profiles as unknown as { full_name: string; email: string } | null;
                   return (
                     <div
                       key={e.id}
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3 text-sm"
                     >
-                      <span>{student?.full_name || student?.email}</span>
+                      <span>{member?.full_name || member?.email}</span>
                       <form action={unenrollStudent}>
                         <input type="hidden" name="id" value={e.id} />
-                        <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Bezig...">
-                          Verwijderen
+                        <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Removing...">
+                          Remove
                         </SubmitButton>
                       </form>
                     </div>
                   );
                 })
               ) : (
-                <p className="text-sm text-foreground/60">Nog geen studenten in dit schooljaar.</p>
+                <p className="text-sm text-foreground/60">No members in this group yet.</p>
               )}
             </div>
           </div>
