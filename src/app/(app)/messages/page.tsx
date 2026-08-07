@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { sendMessage } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 
-export default async function BerichtenPage(props: {
+export default async function MessagesPage(props: {
   searchParams: Promise<{ met?: string }>;
 }) {
   const { met } = await props.searchParams;
@@ -55,7 +55,7 @@ export default async function BerichtenPage(props: {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-primary">Berichten</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-primary">Messages</h1>
       <div className="grid gap-4 sm:grid-cols-[240px_1fr]">
         <aside className={`space-y-1 ${selectedContact ? "hidden sm:block" : ""}`}>
           {contacts?.length ? (
@@ -64,7 +64,7 @@ export default async function BerichtenPage(props: {
               return (
                 <Link
                   key={c.id}
-                  href={`/berichten?met=${c.id}`}
+                  href={`/messages?met=${c.id}`}
                   className={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${
                     selectedContact?.id === c.id
                       ? "bg-primary text-primary-foreground"
@@ -81,7 +81,7 @@ export default async function BerichtenPage(props: {
               );
             })
           ) : (
-            <p className="text-sm text-foreground/60">Nog geen andere gebruikers.</p>
+            <p className="text-sm text-foreground/60">No other users yet.</p>
           )}
         </aside>
 
@@ -93,13 +93,13 @@ export default async function BerichtenPage(props: {
           {selectedContact ? (
             <>
               <Link
-                href="/berichten"
+                href="/messages"
                 className="mb-3 inline-block text-sm text-foreground/60 hover:text-primary sm:hidden"
               >
-                ← Terug naar contacten
+                ← Back to contacts
               </Link>
               <h2 className="mb-4 font-medium">
-                Gesprek met {selectedContact.full_name || selectedContact.email}
+                Conversation with {selectedContact.full_name || selectedContact.email}
               </h2>
               <div className="mb-4 max-h-[50vh] space-y-2 overflow-y-auto">
                 {thread.map((m) => (
@@ -113,12 +113,12 @@ export default async function BerichtenPage(props: {
                   >
                     <p className="whitespace-pre-wrap">{m.body}</p>
                     <p className="mt-1 text-[10px] opacity-70">
-                      {new Date(m.created_at).toLocaleString("nl-NL")}
+                      {new Date(m.created_at).toLocaleString("en-GB")}
                     </p>
                   </div>
                 ))}
                 {thread.length === 0 && (
-                  <p className="text-sm text-foreground/60">Nog geen berichten.</p>
+                  <p className="text-sm text-foreground/60">No messages yet.</p>
                 )}
               </div>
               <form action={sendMessage} className="flex gap-2">
@@ -126,19 +126,19 @@ export default async function BerichtenPage(props: {
                 <input
                   name="body"
                   required
-                  placeholder="Typ een bericht..."
+                  placeholder="Type a message..."
                   className="flex-1 rounded-md border border-border px-3 py-2 text-sm"
                 />
                 <SubmitButton
                   className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-                  pendingText="Bezig..."
+                  pendingText="Sending..."
                 >
-                  Versturen
+                  Send
                 </SubmitButton>
               </form>
             </>
           ) : (
-            <p className="text-foreground/60">Kies links een contact om een gesprek te starten.</p>
+            <p className="text-foreground/60">Choose a contact on the left to start a conversation.</p>
           )}
         </section>
       </div>

@@ -33,5 +33,5 @@ export async function sendMessage(formData: FormData) {
     });
   }
 
-  revalidatePath("/berichten");
+  revalidatePath("/messages");
 }
