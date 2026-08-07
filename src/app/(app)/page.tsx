@@ -34,8 +34,8 @@ export default async function HomePage() {
       .limit(100)
       .returns<UpcomingItem[]>();
 
-    // Vakantie-/themaweken (items die langer dan een dag duren) tellen niet
-    // als "lesdag" — sla ze over op zoek naar de eerste echte lesdag.
+    // Multi-day items (e.g. off-site trips) don't count as a single
+    // "activity day" — skip them when looking for the next real one.
     const regular = (upcoming ?? []).filter(
       (item) => new Date(item.ends_at).getTime() - new Date(item.starts_at).getTime() <= 24 * 60 * 60 * 1000,
     );
@@ -55,7 +55,7 @@ export default async function HomePage() {
   const nextDayLabel = nextDayKeyValue
     ? (() => {
         const d = new Date(nextDayKeyValue!);
-        return `${WEEKDAY_NAMES[d.getUTCDay()]} ${d.toLocaleDateString("nl-NL", {
+        return `${WEEKDAY_NAMES[d.getUTCDay()]} ${d.toLocaleDateString("en-GB", {
           day: "numeric",
           month: "long",
           timeZone: "UTC",
@@ -66,10 +66,10 @@ export default async function HomePage() {
   return (
     <div>
       <div className="mb-8 flex items-center gap-3">
-        <Image src="/brand/rm-icon.svg" alt="" aria-hidden="true" width={32} height={32} className="h-8 w-8" />
+        <Image src="/brand/harbor-icon.svg" alt="" aria-hidden="true" width={32} height={32} className="h-8 w-8" />
         <div>
           <h1 className="text-2xl font-semibold text-primary">
-            Welkom, {profile.full_name || profile.email}
+            Welcome, {profile.full_name || profile.email}
           </h1>
           <div className="mt-1.5 h-0.5 w-12 rounded-full bg-accent" />
         </div>
@@ -78,26 +78,26 @@ export default async function HomePage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-lg border border-border bg-background p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-medium text-primary">Eerstvolgende lesdag</h2>
+            <h2 className="font-medium text-primary">Next activity day</h2>
             {nextDayKeyValue && (
               <Link
-                href={`/rooster?${selectedYear ? `jaar=${selectedYear.id}&` : ""}week=${toDateParam(
+                href={`/schedule?${selectedYear ? `jaar=${selectedYear.id}&` : ""}week=${toDateParam(
                   startOfWeek(new Date(nextDayKeyValue)),
                 )}`}
                 className="text-xs text-foreground/50 hover:text-primary hover:underline"
               >
-                Bekijk rooster
+                View schedule
               </Link>
             )}
           </div>
           {!selectedYear ? (
             <p className="text-sm text-foreground/60">
               {profile.role === "student"
-                ? "Je bent nog niet aan een schooljaar toegevoegd."
-                : "Er is nog geen schooljaar aangemaakt."}
+                ? "You haven't been added to a group yet."
+                : "No group has been created yet."}
             </p>
           ) : !nextDayLabel ? (
-            <p className="text-sm text-foreground/60">Geen geplande lesdagen gevonden.</p>
+            <p className="text-sm text-foreground/60">No upcoming activity days found.</p>
           ) : (
             <>
               <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground/50">
@@ -105,25 +105,25 @@ export default async function HomePage() {
               </p>
               <div className="space-y-2">
                 {nextDayItems.map((item) => {
-                  const teacher = item.profiles;
+                  const organizer = item.profiles;
                   return (
                     <div key={item.id} className="text-sm">
                       <span className="font-medium">{item.title}</span>
                       <span className="text-foreground/60">
                         {" · "}
-                        {new Date(item.starts_at).toLocaleTimeString("nl-NL", {
+                        {new Date(item.starts_at).toLocaleTimeString("en-GB", {
                           hour: "2-digit",
                           minute: "2-digit",
                           timeZone: CLUB_TIMEZONE,
                         })}
                         –
-                        {new Date(item.ends_at).toLocaleTimeString("nl-NL", {
+                        {new Date(item.ends_at).toLocaleTimeString("en-GB", {
                           hour: "2-digit",
                           minute: "2-digit",
                           timeZone: CLUB_TIMEZONE,
                         })}
                         {item.location ? ` · ${item.location}` : ""}
-                        {teacher ? ` · ${teacher.full_name}` : ""}
+                        {organizer ? ` · ${organizer.full_name}` : ""}
                       </span>
                     </div>
                   );
@@ -135,9 +135,9 @@ export default async function HomePage() {
 
         <section className="rounded-lg border border-border bg-background p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-medium text-primary">Laatste nieuws</h2>
-            <Link href="/nieuws" className="text-xs text-foreground/50 hover:text-primary hover:underline">
-              Alle nieuws
+            <h2 className="font-medium text-primary">Latest news</h2>
+            <Link href="/news" className="text-xs text-foreground/50 hover:text-primary hover:underline">
+              All news
             </Link>
           </div>
           {newsPosts?.length ? (
@@ -147,14 +147,14 @@ export default async function HomePage() {
                   <p className="font-medium">{post.title}</p>
                   <p className="line-clamp-2 text-sm text-foreground/60">{post.body}</p>
                   <p className="mt-1 text-xs text-foreground/40">
-                    {post.profiles?.full_name ?? "Onbekend"} ·{" "}
-                    {new Date(post.created_at).toLocaleDateString("nl-NL")}
+                    {post.profiles?.full_name ?? "Unknown"} ·{" "}
+                    {new Date(post.created_at).toLocaleDateString("en-GB")}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-foreground/60">Nog geen nieuws geplaatst.</p>
+            <p className="text-sm text-foreground/60">No news posted yet.</p>
           )}
         </section>
       </div>
