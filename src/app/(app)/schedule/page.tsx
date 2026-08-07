@@ -6,6 +6,8 @@ import { startOfWeek, addDays, toDateParam, dayKey, WEEKDAY_NAMES, CLUB_TIMEZONE
 import { getSchoolYearsForProfile } from "@/lib/school-years";
 import { createScheduleItem, deleteScheduleItem } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+import { Reveal } from "@/components/reveal";
+import { TiltCard } from "@/components/tilt-card";
 
 type ScheduleItem = {
   id: string;
@@ -150,104 +152,106 @@ export default async function SchedulePage(props: {
 
       {selectedYear && (
         <>
-          <div className="mb-6 flex flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 sm:justify-between sm:gap-3">
-            <Link
-              href={`/schedule?${yearQuery}week=${toDateParam(prevWeek)}`}
-              className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
-            >
-              ← <span className="hidden sm:inline">Previous week</span>
-            </Link>
-            <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:gap-3">
-              <span className="hidden font-medium sm:inline">{weekLabel}</span>
-              <span className="font-medium sm:hidden">{weekLabelShort}</span>
+          <Reveal className="mb-6">
+            <TiltCard className="flex flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 sm:justify-between sm:gap-3">
               <Link
-                href={`/schedule?${yearQuery}week=${toDateParam(startOfWeek(new Date()))}`}
-                className="text-xs text-foreground/50 hover:text-primary hover:underline"
+                href={`/schedule?${yearQuery}week=${toDateParam(prevWeek)}`}
+                className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
               >
-                Today
+                ← <span className="hidden sm:inline">Previous week</span>
               </Link>
-            </div>
-            <Link
-              href={`/schedule?${yearQuery}week=${toDateParam(nextWeek)}`}
-              className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
-            >
-              <span className="hidden sm:inline">Next week</span> →
-            </Link>
-          </div>
+              <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:gap-3">
+                <span className="hidden font-medium sm:inline">{weekLabel}</span>
+                <span className="font-medium sm:hidden">{weekLabelShort}</span>
+                <Link
+                  href={`/schedule?${yearQuery}week=${toDateParam(startOfWeek(new Date()))}`}
+                  className="text-xs text-foreground/50 hover:text-primary hover:underline"
+                >
+                  Today
+                </Link>
+              </div>
+              <Link
+                href={`/schedule?${yearQuery}week=${toDateParam(nextWeek)}`}
+                className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
+              >
+                <span className="hidden sm:inline">Next week</span> →
+              </Link>
+            </TiltCard>
+          </Reveal>
 
           {weekMarkers.length > 0 && (
             <div className="mb-6 space-y-2">
-              {weekMarkers.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-medium text-accent"
-                >
-                  {item.title}
-                  {canDelete(item) && (
-                    <form action={deleteScheduleItem} className="mt-1">
-                      <input type="hidden" name="id" value={item.id} />
-                      <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
-                        Delete
-                      </SubmitButton>
-                    </form>
-                  )}
-                </div>
+              {weekMarkers.map((item, i) => (
+                <Reveal key={item.id} delayMs={Math.min(i, 5) * 60}>
+                  <TiltCard className="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
+                    {item.title}
+                    {canDelete(item) && (
+                      <form action={deleteScheduleItem} className="mt-1">
+                        <input type="hidden" name="id" value={item.id} />
+                        <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
+                          Delete
+                        </SubmitButton>
+                      </form>
+                    )}
+                  </TiltCard>
+                </Reveal>
               ))}
             </div>
           )}
 
           {canEdit && (
-            <form
-              action={createScheduleItem}
-              className="mb-8 grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-2"
-            >
-              <input type="hidden" name="school_year_id" value={selectedYear.id} />
-              <input
-                name="title"
-                required
-                placeholder="Title (e.g. Board meeting)"
-                className="rounded-md border border-border px-3 py-2 text-sm sm:col-span-2"
-              />
-              <label className="text-xs text-foreground/60">
-                Start
-                <input
-                  name="starts_at"
-                  type="datetime-local"
-                  required
-                  defaultValue={defaultStart}
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                />
-              </label>
-              <label className="text-xs text-foreground/60">
-                End
-                <input
-                  name="ends_at"
-                  type="datetime-local"
-                  required
-                  defaultValue={defaultEnd}
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                />
-              </label>
-              <input
-                name="location"
-                placeholder="Location"
-                className="rounded-md border border-border px-3 py-2 text-sm"
-              />
-              <select name="teacher_id" className="rounded-md border border-border px-3 py-2 text-sm">
-                <option value="">No organizer</option>
-                {organizers.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.full_name}
-                  </option>
-                ))}
-              </select>
-              <SubmitButton
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground sm:col-span-2"
-                pendingText="Adding..."
-              >
-                Add to schedule
-              </SubmitButton>
-            </form>
+            <Reveal className="mb-8">
+              <TiltCard className="rounded-lg border border-border bg-background p-4">
+                <form action={createScheduleItem} className="grid gap-3 sm:grid-cols-2">
+                  <input type="hidden" name="school_year_id" value={selectedYear.id} />
+                  <input
+                    name="title"
+                    required
+                    placeholder="Title (e.g. Board meeting)"
+                    className="rounded-md border border-border px-3 py-2 text-sm sm:col-span-2"
+                  />
+                  <label className="text-xs text-foreground/60">
+                    Start
+                    <input
+                      name="starts_at"
+                      type="datetime-local"
+                      required
+                      defaultValue={defaultStart}
+                      className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="text-xs text-foreground/60">
+                    End
+                    <input
+                      name="ends_at"
+                      type="datetime-local"
+                      required
+                      defaultValue={defaultEnd}
+                      className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <input
+                    name="location"
+                    placeholder="Location"
+                    className="rounded-md border border-border px-3 py-2 text-sm"
+                  />
+                  <select name="teacher_id" className="rounded-md border border-border px-3 py-2 text-sm">
+                    <option value="">No organizer</option>
+                    {organizers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.full_name}
+                      </option>
+                    ))}
+                  </select>
+                  <SubmitButton
+                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground sm:col-span-2"
+                    pendingText="Adding..."
+                  >
+                    Add to schedule
+                  </SubmitButton>
+                </form>
+              </TiltCard>
+            </Reveal>
           )}
 
           <div className="space-y-6">
@@ -265,45 +269,44 @@ export default async function SchedulePage(props: {
                       {dayLabel}
                     </h2>
                     <div className="space-y-2">
-                      {byDay.get(key)!.map((item) => {
+                      {byDay.get(key)!.map((item, i) => {
                         const organizer = item.profiles;
                         return (
-                          <div
-                            key={item.id}
-                            className="flex items-center justify-between rounded-lg border border-border bg-background p-4"
-                          >
-                            <div>
-                              <p className="font-medium">{item.title}</p>
-                              <p className="text-sm text-foreground/60">
-                                {new Date(item.starts_at).toLocaleTimeString("en-GB", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  timeZone: CLUB_TIMEZONE,
-                                })}{" "}
-                                –{" "}
-                                {new Date(item.ends_at).toLocaleTimeString("en-GB", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  timeZone: CLUB_TIMEZONE,
-                                })}
-                                {item.location ? ` · ${item.location}` : ""}
-                                {organizer ? ` · ${organizer.full_name}` : ""}
-                              </p>
-                              {item.description && (
-                                <p className="mt-1 whitespace-pre-wrap text-sm text-foreground/50">
-                                  {item.description}
+                          <Reveal key={item.id} delayMs={Math.min(i, 5) * 60}>
+                            <TiltCard className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
+                              <div>
+                                <p className="font-medium">{item.title}</p>
+                                <p className="text-sm text-foreground/60">
+                                  {new Date(item.starts_at).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    timeZone: CLUB_TIMEZONE,
+                                  })}{" "}
+                                  –{" "}
+                                  {new Date(item.ends_at).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    timeZone: CLUB_TIMEZONE,
+                                  })}
+                                  {item.location ? ` · ${item.location}` : ""}
+                                  {organizer ? ` · ${organizer.full_name}` : ""}
                                 </p>
+                                {item.description && (
+                                  <p className="mt-1 whitespace-pre-wrap text-sm text-foreground/50">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </div>
+                              {canDelete(item) && (
+                                <form action={deleteScheduleItem}>
+                                  <input type="hidden" name="id" value={item.id} />
+                                  <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
+                                    Delete
+                                  </SubmitButton>
+                                </form>
                               )}
-                            </div>
-                            {canDelete(item) && (
-                              <form action={deleteScheduleItem}>
-                                <input type="hidden" name="id" value={item.id} />
-                                <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
-                                  Delete
-                                </SubmitButton>
-                              </form>
-                            )}
-                          </div>
+                            </TiltCard>
+                          </Reveal>
                         );
                       })}
                     </div>
