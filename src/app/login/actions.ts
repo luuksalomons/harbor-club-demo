@@ -11,7 +11,7 @@ export async function signIn(_prevState: unknown, formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: "Inloggen mislukt. Controleer e-mailadres en wachtwoord." };
+    return { error: "Sign in failed. Check your email address and password." };
   }
 
   redirect("/");

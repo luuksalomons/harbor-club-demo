@@ -8,17 +8,17 @@ export async function setPassword(_prevState: unknown, formData: FormData) {
   const confirm = String(formData.get("confirm") ?? "");
 
   if (password.length < 8) {
-    return { error: "Wachtwoord moet minstens 8 tekens zijn." };
+    return { error: "Password must be at least 8 characters." };
   }
   if (password !== confirm) {
-    return { error: "Wachtwoorden komen niet overeen." };
+    return { error: "Passwords don't match." };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return { error: "Kon wachtwoord niet instellen. Probeer de link opnieuw." };
+    return { error: "Could not set password. Try the link again." };
   }
 
   redirect("/");
