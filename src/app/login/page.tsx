@@ -13,7 +13,7 @@ const DEMO_LOGINS = [
   { role: "Board", email: "board@harborclub.example" },
   { role: "Member", email: "member@harborclub.example" },
 ];
-const DEMO_PASSWORD = "HarborDemo2026!";
+const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_PASSWORD ?? "HarborDemo2026!";
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(signIn, initialState);

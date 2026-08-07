@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const DEMO_PASSWORD = process.env.DEMO_SEED_PASSWORD ?? "HarborDemo2026!";
+const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_PASSWORD ?? "HarborDemo2026!";
 
 const SEED_ACCOUNTS = [
   {
@@ -94,15 +94,18 @@ async function seedDemoContent(
   const boardId = seedIds.get("board@harborclub.example")!;
   const memberId = seedIds.get("member@harborclub.example")!;
 
-  const { data: groups } = await admin
+  const { data: groups, error: groupsError } = await admin
     .from("school_years")
     .insert([
       { name: "North Team", is_active: true },
       { name: "South Team", is_active: false },
     ])
     .select("id, name");
-  const northTeam = groups!.find((g) => g.name === "North Team")!;
-  const southTeam = groups!.find((g) => g.name === "South Team")!;
+  if (groupsError || !groups) {
+    throw new Error(`Failed to seed groups: ${groupsError?.message}`);
+  }
+  const northTeam = groups.find((g) => g.name === "North Team")!;
+  const southTeam = groups.find((g) => g.name === "South Team")!;
 
   await admin.from("enrollments").insert([
     { student_id: memberId, school_year_id: northTeam.id },

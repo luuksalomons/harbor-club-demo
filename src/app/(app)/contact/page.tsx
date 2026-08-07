@@ -76,7 +76,7 @@ export default async function ContactPage() {
               </div>
             ))
           ) : (
-            <p className="text-sm text-foreground/60">You haven't made any requests yet.</p>
+            <p className="text-sm text-foreground/60">You haven&apos;t made any requests yet.</p>
           )}
         </div>
       </div>
