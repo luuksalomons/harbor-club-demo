@@ -4,7 +4,13 @@ import { NextResponse, type NextRequest } from "next/server";
 // Next.js 16 renamed `middleware.ts` to `proxy.ts`. This refreshes the
 // Supabase session cookie on every request and redirects signed-out users
 // away from protected routes.
-const PUBLIC_PATHS = ["/login", "/auth"];
+//
+// "/api/demo/reset" is also public here: it has its own Bearer-token check
+// against CRON_SECRET (see its route.ts), and Vercel Cron never has a
+// Supabase session cookie — without this exemption every nightly cron call
+// (and any manual curl trigger) would get redirected to /login before that
+// check ever runs, silently no-op'ing the reset.
+const PUBLIC_PATHS = ["/login", "/auth", "/api/demo/reset"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
