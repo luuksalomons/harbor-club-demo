@@ -32,6 +32,12 @@ const NO_FILTER_UUID = "00000000-0000-0000-0000-000000000000";
 export async function resetDemoData(): Promise<void> {
   const admin = createAdminClient();
 
+  // Assumes at most 200 total auth users (3 seed accounts + whatever
+  // visitors create via the admin "invite user" flow before the nightly
+  // reset runs). Only the first page is fetched — if that assumption is
+  // ever exceeded, users beyond the first page won't be seen below and
+  // won't get cleaned up. Fine for a demo app; loop over pages if this
+  // stops being true.
   const { data: usersPage } = await admin.auth.admin.listUsers({ perPage: 200 });
   const existingByEmail = new Map((usersPage?.users ?? []).map((u) => [u.email, u]));
 
