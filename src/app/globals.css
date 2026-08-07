@@ -1,21 +1,19 @@
 @import "tailwindcss";
 
 /*
- * Royal Mission huisstijl (bron: royal mission/huisstijl/Redesign 2025 (WIP)/
- * Huisstijl Handboek - September '25.pdf). Portal gebruikt de kleurstelling
- * van het hoofdmerk/Volwassenen: Ruby (primair) + Crimson/Garnet (donker) +
- * Royal Gold (accent). Wijzigt de huisstijl later: pas alleen deze tokens
- * aan, de rest van de app leest er alleen uit.
+ * Harbor Club demo huisstijl: navy (primair) + amber (accent). Pas alleen
+ * deze tokens aan om de kleurstelling te wijzigen — de rest van de app
+ * leest er alleen uit.
  */
 :root {
   --background: #ffffff;
   --foreground: #1a1a1a;
-  --color-primary: #ca2127; /* Ruby */
-  --color-primary-dark: #961c1f; /* Crimson */
+  --color-primary: #1b4965; /* Navy */
+  --color-primary-dark: #0d2b3e; /* Deep navy */
   --color-primary-foreground: #ffffff;
-  --color-accent: #ba8f5a; /* Royal Gold */
-  --color-surface: #f7f5f4;
-  --color-border: #ededee; /* Gray (accentkleur uit de huisstijl) */
+  --color-accent: #f0a202; /* Amber */
+  --color-surface: #f5f7f8;
+  --color-border: #e2e8ec;
 }
 
 @theme inline {
@@ -33,23 +31,10 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #171112;
+    --background: #0b1418;
     --foreground: #ededed;
-    --color-surface: #241a1b;
-    --color-border: #3a2a2b;
-  }
-
-  /* De "Royal Arch"-golf (zie AuthHero/app-header) is een wit vormelement,
-     bedoeld om te verdwijnen tegen een lichte pagina-ondergrond. In donkere
-     modus is die ondergrond bijna zwart, dus zou de golf als een hard wit
-     balkje blijven hangen — verberg 'm dan liever helemaal. */
-  .brand-wave {
-    display: none;
-  }
-  /* Zonder de golf heeft de Ruby balk in donkere modus een dunne rand nodig
-     om niet zomaar over te lopen in de (bijna zwarte) pagina-ondergrond. */
-  .brand-header {
-    border-bottom: 1px solid var(--color-border);
+    --color-surface: #10181d;
+    --color-border: #24313a;
   }
 }
 

@@ -16,11 +16,11 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Royal Mission Portal",
-  description: "Interne omgeving voor studenten en docenten van Royal Mission School",
+  title: "Harbor Club Portal (Demo)",
+  description: "Live demo of a self-service member portal, built for Fiverr buyers to try",
   appleWebApp: {
     capable: true,
-    title: "RM Portal",
+    title: "Harbor Club",
     statusBarStyle: "default",
   },
 };
@@ -39,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="nl"
+      lang="en"
       className={`${inter.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

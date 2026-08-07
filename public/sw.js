@@ -1,4 +1,4 @@
-const CACHE_NAME = "rm-portal-static-v1";
+const CACHE_NAME = "harbor-club-demo-static-v1";
 const STATIC_CACHE_PATTERNS = [
   /^\/_next\/static\//,
   /^\/icon-(192|512)\.png$/,

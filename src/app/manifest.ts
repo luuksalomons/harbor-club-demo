@@ -2,15 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Royal Mission Portal",
-    short_name: "RM Portal",
-    description:
-      "Interne omgeving voor studenten en docenten van Royal Mission School",
+    name: "Harbor Club Portal (Demo)",
+    short_name: "Harbor Club",
+    description: "Live demo of a self-service member portal for schools, clubs, and organizations.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#ca2127",
-    lang: "nl",
+    theme_color: "#1b4965",
+    lang: "en",
     icons: [
       {
         src: "/icon-192.png",
