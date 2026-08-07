@@ -26,7 +26,7 @@ export async function createCareRequest(formData: FormData) {
     note,
   });
 
-  revalidatePath("/zorg");
+  revalidatePath("/contact");
 }
 
 export async function updateCareRequestStatus(formData: FormData) {
@@ -38,5 +38,5 @@ export async function updateCareRequestStatus(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("care_requests").update({ status }).eq("id", id);
 
-  revalidatePath("/zorg");
+  revalidatePath("/contact");
 }

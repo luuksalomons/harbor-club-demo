@@ -6,11 +6,11 @@ import { SubmitButton } from "@/components/submit-button";
 
 const STATUS_LABELS: Record<string, string> = {
   open: "Open",
-  in_behandeling: "In behandeling",
-  afgerond: "Afgerond",
+  in_behandeling: "In Progress",
+  afgerond: "Resolved",
 };
 
-export default async function ZorgPage() {
+export default async function ContactPage() {
   const profile = await requireProfile();
   await requireFeatureEnabled("zorg");
   const supabase = await createClient();
@@ -32,9 +32,9 @@ export default async function ZorgPage() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="mb-2 text-2xl font-semibold text-primary">Zorggesprek aanvragen</h1>
+        <h1 className="mb-2 text-2xl font-semibold text-primary">Contact Requests</h1>
         <p className="mb-4 text-sm text-foreground/60">
-          Met één klik ontvangt de zorgcoach een melding. Een toelichting is optioneel.
+          One click notifies the board. A note is optional.
         </p>
         <form
           action={createCareRequest}
@@ -43,20 +43,20 @@ export default async function ZorgPage() {
           <textarea
             name="note"
             rows={2}
-            placeholder="Toelichting (optioneel)"
+            placeholder="Note (optional)"
             className="w-full rounded-md border border-border px-3 py-2 text-sm"
           />
           <SubmitButton
             className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-primary-foreground"
-            pendingText="Bezig..."
+            pendingText="Sending..."
           >
-            Zorggesprek aanvragen
+            Request contact
           </SubmitButton>
         </form>
       </div>
 
       <div>
-        <h2 className="mb-3 font-medium">Jouw aanvragen</h2>
+        <h2 className="mb-3 font-medium">Your requests</h2>
         <div className="space-y-2">
           {ownRequests?.length ? (
             ownRequests.map((r) => (
@@ -65,9 +65,9 @@ export default async function ZorgPage() {
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3 text-sm"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="break-words">{r.note || <em className="text-foreground/50">Geen toelichting</em>}</p>
+                  <p className="break-words">{r.note || <em className="text-foreground/50">No note</em>}</p>
                   <p className="text-xs text-foreground/50">
-                    {new Date(r.created_at).toLocaleString("nl-NL")}
+                    {new Date(r.created_at).toLocaleString("en-GB")}
                   </p>
                 </div>
                 <span className="shrink-0 rounded bg-surface px-2 py-1 text-xs">
@@ -76,28 +76,28 @@ export default async function ZorgPage() {
               </div>
             ))
           ) : (
-            <p className="text-sm text-foreground/60">Je hebt nog geen aanvragen gedaan.</p>
+            <p className="text-sm text-foreground/60">You haven't made any requests yet.</p>
           )}
         </div>
       </div>
 
       {canManage && (
         <div>
-          <h2 className="mb-3 font-medium">Alle aanvragen (zorgcoach)</h2>
+          <h2 className="mb-3 font-medium">All requests (board)</h2>
           <div className="space-y-2">
             {allRequests?.length ? (
               allRequests.map((r) => {
-                const student = r.profiles as unknown as { full_name: string; email: string } | null;
+                const member = r.profiles as unknown as { full_name: string; email: string } | null;
                 return (
                   <div
                     key={r.id}
                     className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background p-3 text-sm"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium">{student?.full_name ?? student?.email}</p>
-                      <p className="break-words">{r.note || <em className="text-foreground/50">Geen toelichting</em>}</p>
+                      <p className="font-medium">{member?.full_name ?? member?.email}</p>
+                      <p className="break-words">{r.note || <em className="text-foreground/50">No note</em>}</p>
                       <p className="text-xs text-foreground/50">
-                        {new Date(r.created_at).toLocaleString("nl-NL")}
+                        {new Date(r.created_at).toLocaleString("en-GB")}
                       </p>
                     </div>
                     <form action={updateCareRequestStatus} className="flex shrink-0 items-center gap-2">
@@ -115,16 +115,16 @@ export default async function ZorgPage() {
                       </select>
                       <SubmitButton
                         className="rounded-md bg-primary px-3 py-1 text-xs text-primary-foreground"
-                        pendingText="Bezig..."
+                        pendingText="Saving..."
                       >
-                        Opslaan
+                        Save
                       </SubmitButton>
                     </form>
                   </div>
                 );
               })
             ) : (
-              <p className="text-sm text-foreground/60">Geen aanvragen.</p>
+              <p className="text-sm text-foreground/60">No requests.</p>
             )}
           </div>
         </div>
