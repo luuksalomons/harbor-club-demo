@@ -49,3 +49,56 @@ h2,
 h3 {
   font-family: var(--font-heading), var(--font-sans), sans-serif;
 }
+
+/*
+ * Depth & motion: 3D tilt-on-hover cards with layered shadows, and
+ * scroll-triggered reveal. Both degrade to a static, motion-free state
+ * under prefers-reduced-motion.
+ */
+.tilt-card {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  transform: perspective(800px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.2s ease-out;
+  box-shadow:
+    0 1px 2px rgba(13, 43, 62, 0.06),
+    0 4px 8px rgba(13, 43, 62, 0.06),
+    0 12px 24px rgba(13, 43, 62, 0.05);
+  will-change: transform;
+}
+
+.tilt-card:hover,
+.tilt-card:focus-within {
+  box-shadow:
+    0 2px 4px rgba(13, 43, 62, 0.08),
+    0 8px 20px rgba(13, 43, 62, 0.1),
+    0 28px 48px rgba(13, 43, 62, 0.14);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card {
+    transition: none;
+    transform: none !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
