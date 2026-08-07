@@ -13,11 +13,10 @@ create table public.app_features (
 );
 
 insert into public.app_features (key, label) values
-  ('nieuws', 'Nieuws'),
-  ('rooster', 'Rooster'),
-  ('berichten', 'Berichten'),
-  ('zorg', 'Zorggesprek'),
-  ('info', 'Info');
+  ('nieuws', 'News'),
+  ('rooster', 'Schedule'),
+  ('berichten', 'Messages'),
+  ('zorg', 'Contact Requests');
 
 alter table public.app_features enable row level security;
 

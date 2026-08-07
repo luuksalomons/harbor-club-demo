@@ -15,7 +15,6 @@ const NAV_ITEMS = [
   { href: "/rooster", label: "Rooster", key: "rooster" },
   { href: "/berichten", label: "Berichten", key: "berichten" },
   { href: "/zorg", label: "Zorggesprek", key: "zorg" },
-  { href: "/info", label: "Info", key: "info" },
 ] as const;
 
 export function Nav({ profile, features }: { profile: Profile; features: FeatureFlags }) {
@@ -23,7 +22,6 @@ export function Nav({ profile, features }: { profile: Profile; features: Feature
   const pathname = usePathname();
   const [lastPathname, setLastPathname] = useState(pathname);
   const navItems = NAV_ITEMS.filter((item) => item.key === null || features[item.key] !== false);
-  const infoEnabled = features.info !== false;
 
   // Sluit het mobiele menu automatisch zodra er genavigeerd wordt (aangepast
   // tijdens render i.p.v. in een effect, zie React-docs over het
@@ -55,14 +53,6 @@ export function Nav({ profile, features }: { profile: Profile; features: Feature
               {profile.role}
             </span>
           </Link>
-          {infoEnabled && (
-            <Link
-              href="/info"
-              className="shrink-0 rounded border border-white/30 px-2 py-0.5 text-xs text-white/80 hover:border-accent hover:text-white"
-            >
-              Info
-            </Link>
-          )}
           {profile.role === "admin" && (
             <Link
               href="/admin"

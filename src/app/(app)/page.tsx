@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getSchoolYearsForProfile } from "@/lib/school-years";
-import { dayKey, toDateParam, startOfWeek, DAG_NAMEN, NL_TIMEZONE } from "@/lib/dates";
+import { dayKey, toDateParam, startOfWeek, WEEKDAY_NAMES, CLUB_TIMEZONE } from "@/lib/dates";
 
 type UpcomingItem = {
   id: string;
@@ -55,7 +55,7 @@ export default async function HomePage() {
   const nextDayLabel = nextDayKeyValue
     ? (() => {
         const d = new Date(nextDayKeyValue!);
-        return `${DAG_NAMEN[d.getUTCDay()]} ${d.toLocaleDateString("nl-NL", {
+        return `${WEEKDAY_NAMES[d.getUTCDay()]} ${d.toLocaleDateString("nl-NL", {
           day: "numeric",
           month: "long",
           timeZone: "UTC",
@@ -114,13 +114,13 @@ export default async function HomePage() {
                         {new Date(item.starts_at).toLocaleTimeString("nl-NL", {
                           hour: "2-digit",
                           minute: "2-digit",
-                          timeZone: NL_TIMEZONE,
+                          timeZone: CLUB_TIMEZONE,
                         })}
                         –
                         {new Date(item.ends_at).toLocaleTimeString("nl-NL", {
                           hour: "2-digit",
                           minute: "2-digit",
-                          timeZone: NL_TIMEZONE,
+                          timeZone: CLUB_TIMEZONE,
                         })}
                         {item.location ? ` · ${item.location}` : ""}
                         {teacher ? ` · ${teacher.full_name}` : ""}

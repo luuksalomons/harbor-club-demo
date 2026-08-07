@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { requireFeatureEnabled } from "@/lib/features";
 import { createClient } from "@/lib/supabase/server";
-import { startOfWeek, addDays, toDateParam, dayKey, DAG_NAMEN, NL_TIMEZONE } from "@/lib/dates";
+import { startOfWeek, addDays, toDateParam, dayKey, WEEKDAY_NAMES, CLUB_TIMEZONE } from "@/lib/dates";
 import { getSchoolYearsForProfile } from "@/lib/school-years";
 import { createScheduleItem, deleteScheduleItem } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
@@ -254,7 +254,7 @@ export default async function RoosterPage(props: {
             {sortedDayKeys.length ? (
               sortedDayKeys.map((key) => {
                 const date = new Date(key);
-                const dayLabel = `${DAG_NAMEN[date.getUTCDay()]} ${date.toLocaleDateString("nl-NL", {
+                const dayLabel = `${WEEKDAY_NAMES[date.getUTCDay()]} ${date.toLocaleDateString("nl-NL", {
                   day: "numeric",
                   month: "long",
                   timeZone: "UTC",
@@ -278,13 +278,13 @@ export default async function RoosterPage(props: {
                                 {new Date(item.starts_at).toLocaleTimeString("nl-NL", {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                  timeZone: NL_TIMEZONE,
+                                  timeZone: CLUB_TIMEZONE,
                                 })}{" "}
                                 –{" "}
                                 {new Date(item.ends_at).toLocaleTimeString("nl-NL", {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                  timeZone: NL_TIMEZONE,
+                                  timeZone: CLUB_TIMEZONE,
                                 })}
                                 {item.location ? ` · ${item.location}` : ""}
                                 {teacher ? ` · ${teacher.full_name}` : ""}

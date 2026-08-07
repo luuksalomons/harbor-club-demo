@@ -1,11 +1,11 @@
-export const NL_TIMEZONE = "Europe/Amsterdam";
+export const CLUB_TIMEZONE = "Europe/Amsterdam";
 
-// Zet een "datetime-local"-waarde (bv. "2026-09-07T09:00", bedoeld als
-// Nederlandse kloktijd) om naar een correcte UTC ISO-string — zonder te
-// vertrouwen op de tijdzone van de server die dit uitvoert. Nodig omdat
-// `new Date("2026-09-07T09:00").toISOString()` de servertijdzone gebruikt
-// om de invoer te interpreteren, en die verschilt tussen lokaal (Europe/
-// Amsterdam) en Vercel (UTC) — dat gaf een verschuiving van 1-2 uur.
+// Converts a "datetime-local" value (e.g. "2026-09-07T09:00", meant as a
+// local clock time for the club) into a correct UTC ISO string — without
+// relying on the timezone of the server running this code. Needed because
+// `new Date("2026-09-07T09:00").toISOString()` uses the *server's* timezone
+// to interpret the input, and that differs between local dev (often
+// Europe/Amsterdam) and Vercel (UTC) — that caused a 1-2 hour shift.
 export function localDateTimeToUtcIso(local: string): string {
   const [datePart, timePart] = local.split("T");
   const [year, month, day] = datePart.split("-").map(Number);
@@ -14,7 +14,7 @@ export function localDateTimeToUtcIso(local: string): string {
   const guess = new Date(Date.UTC(year, month - 1, day, hour, minute));
 
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: NL_TIMEZONE,
+    timeZone: CLUB_TIMEZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -37,20 +37,20 @@ export function localDateTimeToUtcIso(local: string): string {
   return new Date(guess.getTime() - offset).toISOString();
 }
 
-export const DAG_NAMEN = [
-  "Zondag",
-  "Maandag",
-  "Dinsdag",
-  "Woensdag",
-  "Donderdag",
-  "Vrijdag",
-  "Zaterdag",
+export const WEEKDAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 ];
 
 export function startOfWeek(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
-  const day = d.getDay(); // 0 = zondag
+  const day = d.getDay(); // 0 = Sunday
   const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
   return d;
@@ -63,10 +63,10 @@ export function addDays(date: Date, days: number): Date {
 }
 
 export function toDateParam(date: Date): string {
-  // Let op: NIET toISOString() gebruiken — die converteert naar UTC en
-  // schuift de datum een dag terug zodra de servertijdzone voor op UTC
-  // loopt (bv. Europe/Amsterdam). date is opgebouwd met lokale
-  // setters/getters, dus hier ook lokaal opbouwen i.p.v. via UTC.
+  // Note: do NOT use toISOString() here — that converts to UTC and can
+  // shift the date back a day whenever the server timezone is ahead of UTC
+  // (e.g. Europe/Amsterdam). date is built with local setters/getters, so
+  // build the string the same way instead of going through UTC.
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");

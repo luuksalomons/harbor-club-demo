@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 // Moet gelijk lopen met de keys geïnsert in supabase/migrations/0005_page_toggles.sql.
-export type FeatureKey = "nieuws" | "rooster" | "berichten" | "zorg" | "info";
+export type FeatureKey = "nieuws" | "rooster" | "berichten" | "zorg";
 
 export type FeatureFlags = Record<FeatureKey, boolean>;
 

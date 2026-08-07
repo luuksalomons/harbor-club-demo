@@ -3,6 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 
 export type Role = "student" | "docent" | "admin";
 
+export const ROLE_LABELS: Record<Role, string> = {
+  student: "Member",
+  docent: "Board",
+  admin: "Admin",
+};
+
 export type Profile = {
   id: string;
   email: string;
