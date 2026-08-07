@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type HTMLAttributes } from "react";
+import { useRef, type ElementType, type HTMLAttributes } from "react";
 
 const MAX_TILT_DEG = 6;
 
@@ -8,10 +8,16 @@ const MAX_TILT_DEG = 6;
 // Reduced-motion users get the layered shadow without any movement (also
 // enforced in CSS as the authoritative fallback — see .tilt-card in
 // globals.css).
-export function TiltCard({ className = "", onMouseMove, onMouseLeave, ...props }: HTMLAttributes<HTMLDivElement>) {
-  const ref = useRef<HTMLDivElement>(null);
+export function TiltCard({
+  as: Tag = "div",
+  className = "",
+  onMouseMove,
+  onMouseLeave,
+  ...props
+}: HTMLAttributes<HTMLElement> & { as?: ElementType }) {
+  const ref = useRef<HTMLElement>(null);
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+  function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
     onMouseMove?.(e);
     const el = ref.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -24,7 +30,7 @@ export function TiltCard({ className = "", onMouseMove, onMouseLeave, ...props }
     el.style.setProperty("--tilt-y", `${rotateY}deg`);
   }
 
-  function handleMouseLeave(e: React.MouseEvent<HTMLDivElement>) {
+  function handleMouseLeave(e: React.MouseEvent<HTMLElement>) {
     onMouseLeave?.(e);
     const el = ref.current;
     if (!el) return;
@@ -33,7 +39,7 @@ export function TiltCard({ className = "", onMouseMove, onMouseLeave, ...props }
   }
 
   return (
-    <div
+    <Tag
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
