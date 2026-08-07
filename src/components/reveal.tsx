@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, type ElementType, type HTMLAttributes } from "react";
 
-// Fades and slides content in once it scrolls into view. Renders visible
-// immediately for prefers-reduced-motion (also enforced in CSS as the
-// authoritative fallback — see .reveal in globals.css).
+// Fades and slides content in once it scrolls into view. Under
+// prefers-reduced-motion, .reveal in globals.css forces the visible state
+// regardless of this class, so no matchMedia check is needed here.
 export function Reveal({
   as: Tag = "div",
   className = "",
@@ -18,10 +18,6 @@ export function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setVisible(true);
-      return;
-    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
