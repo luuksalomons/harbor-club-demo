@@ -18,7 +18,7 @@ export async function createNewsPost(formData: FormData) {
     body,
   });
 
-  revalidatePath("/nieuws");
+  revalidatePath("/news");
 }
 
 export async function deleteNewsPost(formData: FormData) {
@@ -29,5 +29,5 @@ export async function deleteNewsPost(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("news_posts").delete().eq("id", id);
 
-  revalidatePath("/nieuws");
+  revalidatePath("/news");
 }

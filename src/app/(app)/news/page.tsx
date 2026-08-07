@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createNewsPost, deleteNewsPost } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 
-export default async function NieuwsPage() {
+export default async function NewsPage() {
   const profile = await requireProfile();
   await requireFeatureEnabled("nieuws");
   const supabase = await createClient();
@@ -18,7 +18,7 @@ export default async function NieuwsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-primary">Nieuws</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-primary">News</h1>
 
       {canPost && (
         <form
@@ -28,21 +28,21 @@ export default async function NieuwsPage() {
           <input
             name="title"
             required
-            placeholder="Titel"
+            placeholder="Title"
             className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
           />
           <textarea
             name="body"
             required
             rows={3}
-            placeholder="Bericht..."
+            placeholder="Message..."
             className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
           />
           <SubmitButton
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-            pendingText="Bezig..."
+            pendingText="Posting..."
           >
-            Plaatsen
+            Post
           </SubmitButton>
         </form>
       )}
@@ -62,22 +62,22 @@ export default async function NieuwsPage() {
                   {canDelete && (
                     <form action={deleteNewsPost}>
                       <input type="hidden" name="id" value={post.id} />
-                      <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Bezig...">
-                        Verwijderen
+                      <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
+                        Delete
                       </SubmitButton>
                     </form>
                   )}
                 </div>
                 <p className="whitespace-pre-wrap text-sm text-foreground/80">{post.body}</p>
                 <p className="mt-2 text-xs text-foreground/50">
-                  {author?.full_name ?? "Onbekend"} ·{" "}
-                  {new Date(post.created_at).toLocaleString("nl-NL")}
+                  {author?.full_name ?? "Unknown"} ·{" "}
+                  {new Date(post.created_at).toLocaleString("en-GB")}
                 </p>
               </article>
             );
           })
         ) : (
-          <p className="text-foreground/60">Nog geen nieuws geplaatst.</p>
+          <p className="text-foreground/60">No news posted yet.</p>
         )}
       </div>
     </div>
