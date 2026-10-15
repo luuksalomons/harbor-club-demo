@@ -102,25 +102,32 @@ Vanaf hier kun je via **Admin** in de app zelf nieuwe gebruikers uitnodigen.
 
 ## Huisstijl
 
-Verwerkt, op basis van `royal mission/huisstijl/Redesign 2025 (WIP)/Huisstijl
-Handboek - September '25.pdf` (in de repo ernaast). De portal gebruikt de
-kleurstelling van het **hoofdmerk/Volwassenen**:
+De UI is gebouwd met [Untitled UI React](https://www.untitledui.com/react)
+(open source, MIT): Tailwind v4 + React Aria. Volgens de Untitled UI-aanpak
+staan de componenten als broncode in de repo, niet als npm-pakket:
 
-- Primair: Ruby `#ca2127`, donker: Crimson `#961c1f`
-- Accent: Royal Gold `#ba8f5a`
-- Lettertypes: **Inter** voor leestekst, **Bricolage Grotesque** voor koppen
-  (via `next/font/google`, zie [`src/app/layout.tsx`](src/app/layout.tsx))
-- Logo/icoon: `public/brand/` (`rm-logo.svg`, `rm-logo-wit.svg`, `rm-icon.svg`
-  — ook gebruikt als favicon via [`src/app/icon.svg`](src/app/icon.svg))
+- Thema/design tokens: [`src/styles/theme.css`](src/styles/theme.css)
+  (kleuren, schaduwen, typografie) — dark mode volgt de OS-instelling.
+- Basiscomponenten: `src/components/base/` (Button, Input, TextArea,
+  NativeSelect, Badge, Avatar, Tooltip), `src/components/foundations/`
+  (FeaturedIcon) en `src/components/application/` (sidebar-navigatie-item).
+- App-specifieke bouwstenen: `card.tsx`, `page-header.tsx`, `empty-state.tsx`,
+  `logo.tsx`, `auth-layout.tsx` in `src/components/`.
+- Iconen: [`@untitledui/icons`](https://www.npmjs.com/package/@untitledui/icons).
 
-Alle kleuren zitten in tokens bovenaan
-[`src/app/globals.css`](src/app/globals.css) (`--color-primary`,
-`--color-accent`, etc.) — bij een huisstijl-update pas je alleen die tokens
-en de bestanden in `public/brand/` aan.
+Harbor Club-kleuren:
 
-> Let op: dit is de kleurstelling van het hoofdmerk (Volwassenen), niet van
-> een van de drie submerken (Leiders/Ondernemers/Jongeren) — zo gekozen omdat
-> de huisstijlgids de Fulltime School niet expliciet aan één submerk koppelt.
+- Merkkleur (navy, `#1b4965` = `brand-600`): de `--color-brand-*`-schaal in
+  `src/styles/theme.css` — pas die schaal aan om de hele app te herkleuren.
+- Accent (amber `#f0a202`): `--color-accent` in
+  [`src/app/globals.css`](src/app/globals.css), gebruikt voor de demo-banner
+  en het logo.
+- Lettertype: **Inter** (via `next/font/google`, zie
+  [`src/app/layout.tsx`](src/app/layout.tsx)).
+
+Let op: in Untitled UI zijn `bg-primary`, `text-primary` enz. *semantische*
+tokens (wit vlak, donkerste tekst), niet de merkkleur. Gebruik voor de
+merkkleur `bg-brand-solid`, `text-brand-secondary`, `ring-brand`, etc.
 
 ## Deployen
 

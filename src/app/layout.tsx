@@ -1,17 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Bricolage_Grotesque } from "next/font/google";
+import { Inter } from "next/font/google";
 import { RegisterServiceWorker } from "./register-sw";
+import { RouteProvider } from "./route-provider";
 import "./globals.css";
 
-// Harbor Club demo: Inter for body text, Bricolage Grotesque for headings.
+// Untitled UI typeface: Inter for body text and headings.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -26,8 +23,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b1418" },
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#171717" },
   ],
 };
 
@@ -39,10 +36,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <RouteProvider>{children}</RouteProvider>
         <RegisterServiceWorker />
       </body>
     </html>

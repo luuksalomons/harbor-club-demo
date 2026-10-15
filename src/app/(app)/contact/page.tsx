@@ -1,10 +1,19 @@
+import { LifeBuoy01 } from "@untitledui/icons";
 import { requireProfile } from "@/lib/auth";
 import { requireFeatureEnabled } from "@/lib/features";
 import { createClient } from "@/lib/supabase/server";
 import { createCareRequest, updateCareRequestStatus } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+import { initials } from "@/lib/initials";
 import { Reveal } from "@/components/reveal";
-import { TiltCard } from "@/components/tilt-card";
+import { Card } from "@/components/card";
+import { PageHeader, SectionHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
+import { Avatar } from "@/components/base/avatar/avatar";
+import { BadgeWithDot } from "@/components/base/badges/badges";
+import { NativeSelect } from "@/components/base/select/select-native";
+import { TextArea } from "@/components/base/textarea/textarea";
+import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 
 const STATUS_LABELS: Record<string, string> = {
   open: "Open",
@@ -32,104 +41,107 @@ export default async function ContactPage() {
     : { data: null };
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="mb-2 text-2xl font-semibold text-primary">Contact Requests</h1>
-        <p className="mb-4 text-sm text-foreground/60">
-          One click notifies the board. A note is optional.
-        </p>
-        <Reveal className="max-w-lg">
-          <TiltCard className="rounded-lg border border-border bg-background p-4">
-            <form action={createCareRequest} className="space-y-3">
-              <textarea
-                name="note"
-                rows={2}
-                placeholder="Note (optional)"
-                className="w-full rounded-md border border-border px-3 py-2 text-sm"
-              />
-              <SubmitButton
-                className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-primary-foreground"
-                pendingText="Sending..."
-              >
-                Request contact
-              </SubmitButton>
-            </form>
-          </TiltCard>
+    <div>
+      <PageHeader title="Contact Requests" description="One click notifies the board. A note is optional." />
+
+      <div className="space-y-10">
+        <Reveal className="max-w-xl">
+          <Card as="section">
+            <div className="flex gap-4 p-4 sm:p-6">
+              <FeaturedIcon icon={LifeBuoy01} color="brand" theme="light" size="lg" className="max-sm:hidden" />
+              <form action={createCareRequest} className="flex-1 space-y-4">
+                <TextArea name="note" label="Note" rows={3} placeholder="Anything the board should know? (optional)" />
+                <SubmitButton size="md" pendingText="Sending...">
+                  Request contact
+                </SubmitButton>
+              </form>
+            </div>
+          </Card>
         </Reveal>
-      </div>
 
-      <div>
-        <h2 className="mb-3 font-medium">Your requests</h2>
-        <div className="space-y-2">
-          {ownRequests?.length ? (
-            ownRequests.map((r, i) => (
-              <Reveal key={r.id} delayMs={Math.min(i, 5) * 60}>
-                <TiltCard className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="min-w-0 flex-1">
-                    <p className="break-words">{r.note || <em className="text-foreground/50">No note</em>}</p>
-                    <p className="text-xs text-foreground/50">
-                      {new Date(r.created_at).toLocaleString("en-GB")}
-                    </p>
-                  </div>
-                  <span className="shrink-0 rounded bg-surface px-2 py-1 text-xs">
-                    {STATUS_LABELS[r.status] ?? r.status}
-                  </span>
-                </TiltCard>
-              </Reveal>
-            ))
-          ) : (
-            <p className="text-sm text-foreground/60">You haven&apos;t made any requests yet.</p>
-          )}
-        </div>
-      </div>
-
-      {canManage && (
-        <div>
-          <h2 className="mb-3 font-medium">All requests (board)</h2>
-          <div className="space-y-2">
-            {allRequests?.length ? (
-              allRequests.map((r, i) => {
-                const member = r.profiles as unknown as { full_name: string; email: string } | null;
-                return (
-                  <Reveal key={r.id} delayMs={Math.min(i, 5) * 60}>
-                    <TiltCard className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background p-3 text-sm">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium">{member?.full_name ?? member?.email}</p>
-                        <p className="break-words">{r.note || <em className="text-foreground/50">No note</em>}</p>
-                        <p className="text-xs text-foreground/50">
-                          {new Date(r.created_at).toLocaleString("en-GB")}
-                        </p>
-                      </div>
-                      <form action={updateCareRequestStatus} className="flex shrink-0 items-center gap-2">
-                        <input type="hidden" name="id" value={r.id} />
-                        <select
-                          name="status"
-                          defaultValue={r.status}
-                          className="rounded-md border border-border px-2 py-1 text-xs"
-                        >
-                          {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                        <SubmitButton
-                          className="rounded-md bg-primary px-3 py-1 text-xs text-primary-foreground"
-                          pendingText="Saving..."
-                        >
-                          Save
-                        </SubmitButton>
-                      </form>
-                    </TiltCard>
-                  </Reveal>
-                );
-              })
+        <section>
+          <SectionHeader title="Your requests" />
+          <Card>
+            {ownRequests?.length ? (
+              <ul className="divide-y divide-secondary">
+                {ownRequests.map((r) => (
+                  <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm break-words text-primary">
+                        {r.note || <em className="text-quaternary">No note</em>}
+                      </p>
+                      <p className="mt-0.5 text-sm text-tertiary">{new Date(r.created_at).toLocaleString("en-GB")}</p>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <p className="text-sm text-foreground/60">No requests.</p>
+              <EmptyState icon={LifeBuoy01} title="No requests yet" description="You haven't made any requests yet." />
             )}
-          </div>
-        </div>
-      )}
+          </Card>
+        </section>
+
+        {canManage && (
+          <section>
+            <SectionHeader title="All requests" description="Visible to the board and contact team." />
+            <Card>
+              {allRequests?.length ? (
+                <ul className="divide-y divide-secondary">
+                  {allRequests.map((r) => {
+                    const member = r.profiles as unknown as { full_name: string; email: string } | null;
+                    const name = member?.full_name || member?.email || "Unknown";
+                    return (
+                      <li key={r.id} className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+                        <div className="flex min-w-0 flex-1 gap-3">
+                          <Avatar size="md" initials={initials(name)} alt={name} />
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-sm font-semibold text-primary">{name}</p>
+                              <StatusBadge status={r.status} />
+                            </div>
+                            <p className="mt-0.5 text-sm break-words text-tertiary">
+                              {r.note || <em className="text-quaternary">No note</em>}
+                            </p>
+                            <p className="mt-0.5 text-xs text-quaternary">
+                              {new Date(r.created_at).toLocaleString("en-GB")}
+                            </p>
+                          </div>
+                        </div>
+                        <form action={updateCareRequestStatus} className="flex shrink-0 items-center gap-2">
+                          <input type="hidden" name="id" value={r.id} />
+                          <NativeSelect
+                            name="status"
+                            size="sm"
+                            aria-label="Status"
+                            defaultValue={r.status}
+                            className="w-36"
+                            options={Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }))}
+                          />
+                          <SubmitButton color="secondary" size="sm" pendingText="Saving...">
+                            Save
+                          </SubmitButton>
+                        </form>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <EmptyState icon={LifeBuoy01} title="No requests" description="Nobody has asked for contact yet." />
+              )}
+            </Card>
+          </section>
+        )}
+      </div>
     </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const color = status === "afgerond" ? "success" : status === "in_behandeling" ? "warning" : "brand";
+  return (
+    <BadgeWithDot type="pill-color" color={color} size="sm">
+      {STATUS_LABELS[status] ?? status}
+    </BadgeWithDot>
   );
 }

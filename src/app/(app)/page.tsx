@@ -1,11 +1,14 @@
-import Image from "next/image";
-import Link from "next/link";
+import { Announcement02, CalendarDate } from "@untitledui/icons";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getSchoolYearsForProfile } from "@/lib/school-years";
 import { dayKey, toDateParam, startOfWeek, WEEKDAY_NAMES, CLUB_TIMEZONE } from "@/lib/dates";
 import { Reveal } from "@/components/reveal";
-import { TiltCard } from "@/components/tilt-card";
+import { Card, CardHeader } from "@/components/card";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/base/buttons/button";
+import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 
 type UpcomingItem = {
   id: string;
@@ -65,103 +68,97 @@ export default async function HomePage() {
       })()
     : null;
 
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: CLUB_TIMEZONE });
+
   return (
     <div>
-      <div className="mb-8 flex items-center gap-3">
-        <Image src="/brand/harbor-icon.svg" alt="" aria-hidden="true" width={32} height={32} className="h-8 w-8" />
-        <div>
-          <h1 className="text-2xl font-semibold text-primary">
-            Welcome, {profile.full_name || profile.email}
-          </h1>
-          <div className="mt-1.5 h-0.5 w-12 rounded-full bg-accent" />
-        </div>
-      </div>
+      <PageHeader
+        title={`Welcome back, ${profile.full_name || profile.email}`}
+        description="Here's what's coming up at Harbor Club."
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Reveal>
-          <TiltCard className="rounded-lg border border-border bg-background p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-medium text-primary">Next activity day</h2>
-              {nextDayKeyValue && (
-                <Link
-                  href={`/schedule?${selectedYear ? `jaar=${selectedYear.id}&` : ""}week=${toDateParam(
-                    startOfWeek(new Date(nextDayKeyValue)),
-                  )}`}
-                  className="text-xs text-foreground/50 hover:text-primary hover:underline"
-                >
-                  View schedule
-                </Link>
-              )}
-            </div>
+          <Card as="section" className="h-full">
+            <CardHeader
+              title="Next activity day"
+              description={nextDayLabel ?? undefined}
+              actions={
+                nextDayKeyValue && (
+                  <Button
+                    color="link-color"
+                    size="sm"
+                    href={`/schedule?${selectedYear ? `jaar=${selectedYear.id}&` : ""}week=${toDateParam(
+                      startOfWeek(new Date(nextDayKeyValue)),
+                    )}`}
+                  >
+                    View schedule
+                  </Button>
+                )
+              }
+            />
             {!selectedYear ? (
-              <p className="text-sm text-foreground/60">
-                {profile.role === "student"
-                  ? "You haven't been added to a group yet."
-                  : "No group has been created yet."}
-              </p>
+              <EmptyState
+                icon={CalendarDate}
+                title="No group yet"
+                description={
+                  profile.role === "student"
+                    ? "You haven't been added to a group yet."
+                    : "No group has been created yet."
+                }
+              />
             ) : !nextDayLabel ? (
-              <p className="text-sm text-foreground/60">No upcoming activity days found.</p>
+              <EmptyState icon={CalendarDate} title="Nothing planned" description="No upcoming activity days found." />
             ) : (
-              <>
-                <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground/50">
-                  {nextDayLabel}
-                </p>
-                <div className="space-y-2">
-                  {nextDayItems.map((item) => {
-                    const organizer = item.profiles;
-                    return (
-                      <div key={item.id} className="text-sm">
-                        <span className="font-medium">{item.title}</span>
-                        <span className="text-foreground/60">
-                          {" · "}
-                          {new Date(item.starts_at).toLocaleTimeString("en-GB", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            timeZone: CLUB_TIMEZONE,
-                          })}
-                          –
-                          {new Date(item.ends_at).toLocaleTimeString("en-GB", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            timeZone: CLUB_TIMEZONE,
-                          })}
+              <ul className="divide-y divide-secondary">
+                {nextDayItems.map((item) => {
+                  const organizer = item.profiles;
+                  return (
+                    <li key={item.id} className="flex gap-4 px-4 py-4 sm:px-6">
+                      <FeaturedIcon icon={CalendarDate} color="brand" theme="light" size="md" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-primary">{item.title}</p>
+                        <p className="mt-0.5 text-sm text-tertiary">
+                          {formatTime(item.starts_at)} – {formatTime(item.ends_at)}
                           {item.location ? ` · ${item.location}` : ""}
                           {organizer ? ` · ${organizer.full_name}` : ""}
-                        </span>
+                        </p>
                       </div>
-                    );
-                  })}
-                </div>
-              </>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
-          </TiltCard>
+          </Card>
         </Reveal>
 
-        <Reveal delayMs={120}>
-          <TiltCard className="rounded-lg border border-border bg-background p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-medium text-primary">Latest news</h2>
-              <Link href="/news" className="text-xs text-foreground/50 hover:text-primary hover:underline">
-                All news
-              </Link>
-            </div>
+        <Reveal delayMs={80}>
+          <Card as="section" className="h-full">
+            <CardHeader
+              title="Latest news"
+              actions={
+                <Button color="link-color" size="sm" href="/news">
+                  All news
+                </Button>
+              }
+            />
             {newsPosts?.length ? (
-              <div className="space-y-4">
+              <ul className="divide-y divide-secondary">
                 {newsPosts.map((post) => (
-                  <div key={post.id}>
-                    <p className="font-medium">{post.title}</p>
-                    <p className="line-clamp-2 text-sm text-foreground/60">{post.body}</p>
-                    <p className="mt-1 text-xs text-foreground/40">
-                      {post.profiles?.full_name ?? "Unknown"} ·{" "}
-                      {new Date(post.created_at).toLocaleDateString("en-GB")}
+                  <li key={post.id} className="px-4 py-4 sm:px-6">
+                    <p className="text-sm font-semibold text-primary">{post.title}</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-tertiary">{post.body}</p>
+                    <p className="mt-2 text-xs text-quaternary">
+                      {post.profiles?.full_name ?? "Unknown"} · {new Date(post.created_at).toLocaleDateString("en-GB")}
                     </p>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : (
-              <p className="text-sm text-foreground/60">No news posted yet.</p>
+              <EmptyState icon={Announcement02} title="No news yet" description="No news posted yet." />
             )}
-          </TiltCard>
+          </Card>
         </Reveal>
       </div>
     </div>
