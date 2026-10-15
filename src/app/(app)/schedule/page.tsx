@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { CalendarDate, ChevronLeft, ChevronRight, Flag05, MarkerPin01, Plus, Trash01, User01 } from "@untitledui/icons";
 import { requireProfile } from "@/lib/auth";
 import { requireFeatureEnabled } from "@/lib/features";
 import { createClient } from "@/lib/supabase/server";
@@ -7,7 +7,14 @@ import { getSchoolYearsForProfile } from "@/lib/school-years";
 import { createScheduleItem, deleteScheduleItem } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 import { Reveal } from "@/components/reveal";
-import { TiltCard } from "@/components/tilt-card";
+import { Card, CardHeader } from "@/components/card";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
+import { ButtonGroupLinks } from "@/components/button-group-links";
+import { Button } from "@/components/base/buttons/button";
+import { Input } from "@/components/base/input/input";
+import { NativeSelect } from "@/components/base/select/select-native";
+import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 
 type ScheduleItem = {
   id: string;
@@ -119,144 +126,107 @@ export default async function SchedulePage(props: {
   const defaultStart = `${toDateParam(weekStart)}T09:00`;
   const defaultEnd = `${toDateParam(weekStart)}T12:00`;
 
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: CLUB_TIMEZONE });
+
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-primary">Schedule</h1>
-        {schoolYears.length > 1 && (
-          <div className="flex gap-2 text-sm">
-            {schoolYears.map((y) => (
-              <Link
-                key={y.id}
-                href={`/schedule?jaar=${y.id}`}
-                className={`rounded-md border px-3 py-1 ${
-                  selectedYear?.id === y.id
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border text-foreground/70"
-                }`}
-              >
-                {y.name}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Schedule"
+        description="Activities for your group, week by week."
+        actions={
+          schoolYears.length > 1 && (
+            <ButtonGroupLinks
+              items={schoolYears.map((y) => ({
+                href: `/schedule?jaar=${y.id}`,
+                label: y.name,
+                current: selectedYear?.id === y.id,
+              }))}
+            />
+          )
+        }
+      />
 
       {!selectedYear && (
-        <p className="text-foreground/60">
-          {canEdit
-            ? "No group has been created yet. Go to Admin to add one."
-            : "You haven't been added to a group yet. Contact the admin."}
-        </p>
+        <Card>
+          <EmptyState
+            icon={CalendarDate}
+            title="No group yet"
+            description={
+              canEdit
+                ? "No group has been created yet. Go to Admin to add one."
+                : "You haven't been added to a group yet. Contact the admin."
+            }
+          />
+        </Card>
       )}
 
       {selectedYear && (
-        <>
-          <Reveal className="mb-6">
-            <TiltCard className="flex flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 sm:justify-between sm:gap-3">
-              <Link
+        <div className={canEdit ? "grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start" : ""}>
+          <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-1">
+            <Card className="flex items-center justify-between gap-2 px-2 py-2 sm:px-3">
+              <Button
                 href={`/schedule?${yearQuery}week=${toDateParam(prevWeek)}`}
-                className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
+                color="tertiary"
+                size="sm"
+                aria-label="Previous week"
+                iconLeading={<ChevronLeft data-icon className="size-5" />}
               >
-                ← <span className="hidden sm:inline">Previous week</span>
-              </Link>
-              <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:gap-3">
-                <span className="hidden font-medium sm:inline">{weekLabel}</span>
-                <span className="font-medium sm:hidden">{weekLabelShort}</span>
-                <Link
+                <span className="max-sm:hidden">Previous</span>
+              </Button>
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
+                <span className="text-sm font-semibold text-primary max-sm:hidden">{weekLabel}</span>
+                <span className="text-sm font-semibold text-primary sm:hidden">{weekLabelShort}</span>
+                <Button
                   href={`/schedule?${yearQuery}week=${toDateParam(startOfWeek(new Date()))}`}
-                  className="text-xs text-foreground/50 hover:text-primary hover:underline"
+                  color="secondary"
+                  size="sm"
                 >
                   Today
-                </Link>
+                </Button>
               </div>
-              <Link
+              <Button
                 href={`/schedule?${yearQuery}week=${toDateParam(nextWeek)}`}
-                className="rounded-md px-3 py-1 text-sm text-foreground/70 hover:bg-surface"
+                color="tertiary"
+                size="sm"
+                aria-label="Next week"
+                iconTrailing={<ChevronRight data-icon className="size-5" />}
               >
-                <span className="hidden sm:inline">Next week</span> →
-              </Link>
-            </TiltCard>
-          </Reveal>
+                <span className="max-sm:hidden">Next</span>
+              </Button>
+            </Card>
 
-          {weekMarkers.length > 0 && (
-            <div className="mb-6 space-y-2">
-              {weekMarkers.map((item, i) => (
-                <Reveal key={item.id} delayMs={Math.min(i, 5) * 60}>
-                  <TiltCard className="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
-                    {item.title}
+            {weekMarkers.length > 0 && (
+              <div className="space-y-2">
+                {weekMarkers.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-primary px-4 py-3 ring-1 ring-brand ring-inset"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <FeaturedIcon icon={Flag05} color="brand" theme="light" size="sm" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-brand-secondary">{item.title}</p>
+                        <p className="text-sm text-brand-tertiary">
+                          {formatDay(item.starts_at)} – {formatDay(item.ends_at)}
+                        </p>
+                      </div>
+                    </div>
                     {canDelete(item) && (
-                      <form action={deleteScheduleItem} className="mt-1">
+                      <form action={deleteScheduleItem}>
                         <input type="hidden" name="id" value={item.id} />
-                        <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
+                        <SubmitButton color="link-destructive" size="sm" pendingText="Deleting...">
                           Delete
                         </SubmitButton>
                       </form>
                     )}
-                  </TiltCard>
-                </Reveal>
-              ))}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            )}
 
-          {canEdit && (
-            <Reveal className="mb-8">
-              <TiltCard className="rounded-lg border border-border bg-background p-4">
-                <form action={createScheduleItem} className="grid gap-3 sm:grid-cols-2">
-                  <input type="hidden" name="school_year_id" value={selectedYear.id} />
-                  <input
-                    name="title"
-                    required
-                    placeholder="Title (e.g. Board meeting)"
-                    className="rounded-md border border-border px-3 py-2 text-sm sm:col-span-2"
-                  />
-                  <label className="text-xs text-foreground/60">
-                    Start
-                    <input
-                      name="starts_at"
-                      type="datetime-local"
-                      required
-                      defaultValue={defaultStart}
-                      className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                    />
-                  </label>
-                  <label className="text-xs text-foreground/60">
-                    End
-                    <input
-                      name="ends_at"
-                      type="datetime-local"
-                      required
-                      defaultValue={defaultEnd}
-                      className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                    />
-                  </label>
-                  <input
-                    name="location"
-                    placeholder="Location"
-                    className="rounded-md border border-border px-3 py-2 text-sm"
-                  />
-                  <select name="teacher_id" className="rounded-md border border-border px-3 py-2 text-sm">
-                    <option value="">No organizer</option>
-                    {organizers.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.full_name}
-                      </option>
-                    ))}
-                  </select>
-                  <SubmitButton
-                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground sm:col-span-2"
-                    pendingText="Adding..."
-                  >
-                    Add to schedule
-                  </SubmitButton>
-                </form>
-              </TiltCard>
-            </Reveal>
-          )}
-
-          <div className="space-y-6">
             {sortedDayKeys.length ? (
-              sortedDayKeys.map((key) => {
+              sortedDayKeys.map((key, dayIndex) => {
                 const date = new Date(key);
                 const dayLabel = `${WEEKDAY_NAMES[date.getUTCDay()]} ${date.toLocaleDateString("en-GB", {
                   day: "numeric",
@@ -264,61 +234,99 @@ export default async function SchedulePage(props: {
                   timeZone: "UTC",
                 })}`;
                 return (
-                  <div key={key}>
-                    <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-foreground/50">
-                      {dayLabel}
-                    </h2>
-                    <div className="space-y-2">
-                      {byDay.get(key)!.map((item, i) => {
-                        const organizer = item.profiles;
-                        return (
-                          <Reveal key={item.id} delayMs={Math.min(i, 5) * 60}>
-                            <TiltCard className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
-                              <div>
-                                <p className="font-medium">{item.title}</p>
-                                <p className="text-sm text-foreground/60">
-                                  {new Date(item.starts_at).toLocaleTimeString("en-GB", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    timeZone: CLUB_TIMEZONE,
-                                  })}{" "}
-                                  –{" "}
-                                  {new Date(item.ends_at).toLocaleTimeString("en-GB", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    timeZone: CLUB_TIMEZONE,
-                                  })}
-                                  {item.location ? ` · ${item.location}` : ""}
-                                  {organizer ? ` · ${organizer.full_name}` : ""}
-                                </p>
-                                {item.description && (
-                                  <p className="mt-1 whitespace-pre-wrap text-sm text-foreground/50">
-                                    {item.description}
+                  <Reveal key={key} as="section" delayMs={Math.min(dayIndex, 5) * 60}>
+                    <h2 className="mb-3 text-sm font-semibold text-tertiary">{dayLabel}</h2>
+                    <Card>
+                      <ul className="divide-y divide-secondary">
+                        {byDay.get(key)!.map((item) => {
+                          const organizer = item.profiles;
+                          return (
+                            <li key={item.id} className="flex items-start justify-between gap-4 px-4 py-4 sm:px-6">
+                              <div className="flex min-w-0 gap-4">
+                                <div className="w-12 shrink-0 text-sm">
+                                  <p className="font-semibold text-brand-secondary">{formatTime(item.starts_at)}</p>
+                                  <p className="text-quaternary">{formatTime(item.ends_at)}</p>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-primary">{item.title}</p>
+                                  <p className="mt-1 flex flex-wrap empty:hidden items-center gap-x-3 gap-y-1 text-sm text-tertiary">
+                                    {item.location && (
+                                      <span className="inline-flex items-center gap-1">
+                                        <MarkerPin01 className="size-4 text-fg-quaternary" aria-hidden="true" />
+                                        {item.location}
+                                      </span>
+                                    )}
+                                    {organizer && (
+                                      <span className="inline-flex items-center gap-1">
+                                        <User01 className="size-4 text-fg-quaternary" aria-hidden="true" />
+                                        {organizer.full_name}
+                                      </span>
+                                    )}
                                   </p>
-                                )}
+                                  {item.description && (
+                                    <p className="mt-2 text-sm whitespace-pre-wrap text-tertiary">{item.description}</p>
+                                  )}
+                                </div>
                               </div>
                               {canDelete(item) && (
-                                <form action={deleteScheduleItem}>
+                                <form action={deleteScheduleItem} className="shrink-0">
                                   <input type="hidden" name="id" value={item.id} />
-                                  <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
-                                    Delete
-                                  </SubmitButton>
+                                  <SubmitButton
+                                    color="tertiary"
+                                    size="sm"
+                                    aria-label={`Delete ${item.title}`}
+                                    iconLeading={<Trash01 data-icon className="size-5" />}
+                                  />
                                 </form>
                               )}
-                            </TiltCard>
-                          </Reveal>
-                        );
-                      })}
-                    </div>
-                  </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </Card>
+                  </Reveal>
                 );
               })
             ) : (
-              <p className="text-foreground/60">No activities scheduled this week.</p>
+              <Card>
+                <EmptyState icon={CalendarDate} title="Nothing scheduled" description="No activities scheduled this week." />
+              </Card>
             )}
           </div>
-        </>
+          {canEdit && (
+            <Reveal className="lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1">
+              <Card as="section">
+                <CardHeader title="Add activity" description={`For ${selectedYear.name}.`} />
+                <form action={createScheduleItem} className="space-y-4 p-4 sm:p-6">
+                  <input type="hidden" name="school_year_id" value={selectedYear.id} />
+                  <Input name="title" label="Title" isRequired placeholder="e.g. Board meeting" />
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                    <Input name="starts_at" label="Start" type="datetime-local" isRequired defaultValue={defaultStart} />
+                    <Input name="ends_at" label="End" type="datetime-local" isRequired defaultValue={defaultEnd} />
+                  </div>
+                  <Input name="location" label="Location" placeholder="e.g. Clubhouse" />
+                  <NativeSelect
+                    name="teacher_id"
+                    label="Organizer"
+                    options={[
+                      { value: "", label: "No organizer" },
+                      ...organizers.map((t) => ({ value: t.id, label: t.full_name })),
+                    ]}
+                  />
+                  <SubmitButton size="md" className="w-full" pendingText="Adding..." iconLeading={<Plus data-icon className="size-5" />}>
+                    Add to schedule
+                  </SubmitButton>
+                </form>
+              </Card>
+            </Reveal>
+          )}
+
+        </div>
       )}
     </div>
   );
+}
+
+function formatDay(iso: string) {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: CLUB_TIMEZONE });
 }

@@ -1,26 +1,20 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { Spinner } from "./spinner";
+import { Button, type ButtonProps } from "@/components/base/buttons/button";
 
+// Untitled UI button that submits its form and shows a spinner (plus the
+// optional pendingText) while the server action runs.
 export function SubmitButton({
   children,
   pendingText,
-  className = "",
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { pendingText?: string }) {
+}: Omit<ButtonProps, "type" | "isLoading"> & { pendingText?: string }) {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      aria-busy={pending}
-      className={`inline-flex items-center justify-center gap-2 disabled:cursor-wait disabled:opacity-70 ${className}`}
-      {...props}
-    >
-      {pending && <Spinner className="h-3.5 w-3.5" />}
+    <Button type="submit" isLoading={pending} showTextWhileLoading={!!pendingText} {...props}>
       {pending && pendingText ? pendingText : children}
-    </button>
+    </Button>
   );
 }

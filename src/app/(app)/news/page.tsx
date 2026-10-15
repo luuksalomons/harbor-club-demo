@@ -1,10 +1,17 @@
+import { Announcement02 } from "@untitledui/icons";
 import { requireProfile } from "@/lib/auth";
 import { requireFeatureEnabled } from "@/lib/features";
 import { createClient } from "@/lib/supabase/server";
+import { initials } from "@/lib/initials";
 import { createNewsPost, deleteNewsPost } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 import { Reveal } from "@/components/reveal";
-import { TiltCard } from "@/components/tilt-card";
+import { Card, CardHeader } from "@/components/card";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
+import { Avatar } from "@/components/base/avatar/avatar";
+import { Input } from "@/components/base/input/input";
+import { TextArea } from "@/components/base/textarea/textarea";
 
 export default async function NewsPage() {
   const profile = await requireProfile();
@@ -20,67 +27,70 @@ export default async function NewsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-primary">News</h1>
+      <PageHeader title="News" description="Announcements and updates from the club." />
 
-      {canPost && (
-        <Reveal className="mb-8">
-          <TiltCard className="rounded-lg border border-border bg-background p-4">
-            <form action={createNewsPost} className="space-y-3">
-              <input
-                name="title"
-                required
-                placeholder="Title"
-                className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-              />
-              <textarea
-                name="body"
-                required
-                rows={3}
-                placeholder="Message..."
-                className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-              />
-              <SubmitButton
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-                pendingText="Posting..."
-              >
-                Post
-              </SubmitButton>
-            </form>
-          </TiltCard>
-        </Reveal>
-      )}
-
-      <div className="space-y-4">
-        {posts?.length ? (
-          posts.map((post, i) => {
-            const author = post.profiles as unknown as { full_name: string } | null;
-            const canDelete = profile.role === "admin" || post.author_id === profile.id;
-            return (
-              <Reveal key={post.id} delayMs={Math.min(i, 5) * 60}>
-                <TiltCard as="article" className="rounded-lg border border-border bg-background p-4">
-                  <div className="mb-1 flex items-center justify-between">
-                    <h2 className="font-medium">{post.title}</h2>
-                    {canDelete && (
-                      <form action={deleteNewsPost}>
-                        <input type="hidden" name="id" value={post.id} />
-                        <SubmitButton className="text-xs text-primary-dark hover:underline" pendingText="Deleting...">
-                          Delete
-                        </SubmitButton>
-                      </form>
-                    )}
-                  </div>
-                  <p className="whitespace-pre-wrap text-sm text-foreground/80">{post.body}</p>
-                  <p className="mt-2 text-xs text-foreground/50">
-                    {author?.full_name ?? "Unknown"} ·{" "}
-                    {new Date(post.created_at).toLocaleString("en-GB")}
-                  </p>
-                </TiltCard>
-              </Reveal>
-            );
-          })
-        ) : (
-          <p className="text-foreground/60">No news posted yet.</p>
+      <div className={canPost ? "grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start" : "max-w-3xl"}>
+        {canPost && (
+          <Reveal className="lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1">
+            <Card as="section">
+              <CardHeader title="New post" description="Visible to all members." />
+              <form action={createNewsPost} className="space-y-4 p-4 sm:p-6">
+                <Input name="title" label="Title" isRequired placeholder="e.g. Summer regatta" />
+                <TextArea name="body" label="Message" isRequired rows={4} placeholder="Write your announcement..." />
+                <SubmitButton size="md" className="w-full" pendingText="Posting...">
+                  Post
+                </SubmitButton>
+              </form>
+            </Card>
+          </Reveal>
         )}
+        <div className="space-y-4 lg:col-start-1 lg:row-start-1">
+          {posts?.length ? (
+            posts.map((post, i) => {
+              const author = post.profiles as unknown as { full_name: string } | null;
+              const authorName = author?.full_name ?? "Unknown";
+              const canDelete = profile.role === "admin" || post.author_id === profile.id;
+              return (
+                <Reveal key={post.id} delayMs={Math.min(i, 5) * 60}>
+                  <Card as="article" className="p-4 sm:p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Avatar size="md" initials={initials(authorName)} alt={authorName} />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-primary">{authorName}</p>
+                          <p className="text-sm text-tertiary">
+                            {new Date(post.created_at).toLocaleString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      {canDelete && (
+                        <form action={deleteNewsPost}>
+                          <input type="hidden" name="id" value={post.id} />
+                          <SubmitButton color="link-destructive" size="sm" pendingText="Deleting...">
+                            Delete
+                          </SubmitButton>
+                        </form>
+                      )}
+                    </div>
+                    <h2 className="mt-4 text-lg font-semibold text-primary">{post.title}</h2>
+                    <p className="mt-1 text-md whitespace-pre-wrap text-tertiary">{post.body}</p>
+                  </Card>
+                </Reveal>
+              );
+            })
+          ) : (
+            <Card>
+              <EmptyState icon={Announcement02} title="No news yet" description="No news posted yet." />
+            </Card>
+          )}
+        </div>
+
       </div>
     </div>
   );

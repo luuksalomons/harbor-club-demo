@@ -1,88 +1,80 @@
 @import "tailwindcss";
+@import "../styles/theme.css";
+@import "../styles/typography.css";
+
+@plugin "tailwindcss-react-aria-components";
+@plugin "tailwindcss-animate";
 
 /*
- * Harbor Club demo huisstijl: navy (primair) + amber (accent). Pas alleen
- * deze tokens aan om de kleurstelling te wijzigen — de rest van de app
- * leest er alleen uit.
+ * Harbor Club demo huisstijl op basis van Untitled UI (https://www.untitledui.com).
+ * De merkkleur (navy) staat als --color-brand-* schaal in styles/theme.css;
+ * pas die schaal aan om de kleurstelling te wijzigen. Amber is het accent
+ * voor de demo-banner.
  */
-:root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --color-primary: #1b4965; /* Navy */
-  --color-primary-dark: #0d2b3e; /* Deep navy */
-  --color-primary-foreground: #ffffff;
+@theme {
   --color-accent: #f0a202; /* Amber */
-  --color-surface: #f5f7f8;
-  --color-border: #e2e8ec;
+  --color-accent-foreground: #0d2b3e; /* Deep navy */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--color-primary);
-  --color-primary-dark: var(--color-primary-dark);
-  --color-primary-foreground: var(--color-primary-foreground);
-  --color-accent: var(--color-accent);
-  --color-surface: var(--color-surface);
-  --color-border: var(--color-border);
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-bricolage);
-}
+/* Dark mode follows the OS setting (see the dark block in styles/theme.css). */
+@custom-variant dark (@media (prefers-color-scheme: dark));
+@custom-variant label (& [data-label]);
+@custom-variant focus-input-within (&:has(input:focus));
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0b1418;
-    --foreground: #ededed;
-    --color-surface: #10181d;
-    --color-border: #24313a;
+@utility scrollbar-hide {
+  &::-webkit-scrollbar {
+    display: none;
+    -webkit-appearance: none;
   }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility transition-inherit-all {
+  transition-property: inherit;
+  transition-duration: inherit;
+  transition-timing-function: inherit;
+}
+
+html,
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-ligatures: contextual;
+  font-kerning: normal;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-heading), var(--font-sans), sans-serif;
+/* Hide default arrows from number inputs. */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Native date/time pickers follow the colour scheme. */
+input[type="datetime-local"] {
+  color-scheme: light dark;
 }
 
 /*
- * Depth & motion: 3D tilt-on-hover cards with layered shadows, and
- * scroll-triggered reveal. Both degrade to a static, motion-free state
- * under prefers-reduced-motion.
+ * Scroll-triggered reveal: a short fade-up as content enters the viewport.
+ * Motion-free under prefers-reduced-motion.
  */
-.tilt-card {
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  transform: perspective(800px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
-  transition:
-    transform 0.15s ease-out,
-    box-shadow 0.2s ease-out;
-  box-shadow:
-    0 1px 2px rgba(13, 43, 62, 0.06),
-    0 4px 8px rgba(13, 43, 62, 0.06),
-    0 12px 24px rgba(13, 43, 62, 0.05);
-  will-change: transform;
-}
-
-.tilt-card:hover,
-.tilt-card:focus-within {
-  box-shadow:
-    0 2px 4px rgba(13, 43, 62, 0.08),
-    0 8px 20px rgba(13, 43, 62, 0.1),
-    0 28px 48px rgba(13, 43, 62, 0.14);
-}
-
 .reveal {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(8px);
   transition:
-    opacity 0.5s ease-out,
-    transform 0.5s ease-out;
+    opacity 0.4s ease-out,
+    transform 0.4s ease-out;
 }
 
 .reveal-visible {
@@ -91,11 +83,6 @@ h3 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tilt-card {
-    transition: none;
-    transform: none !important;
-  }
-
   .reveal {
     opacity: 1;
     transform: none;

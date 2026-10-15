@@ -12,14 +12,12 @@ export default async function AppLayout({
   const features = await getFeatureFlags();
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
-      <DemoBanner />
-      <header className="bg-primary">
-        <div className="mx-auto max-w-5xl px-4 py-3">
-          <Nav profile={profile} features={features} />
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-6 pt-8 sm:pb-8 sm:pt-10">{children}</main>
+    <div className="flex min-h-screen flex-col bg-secondary">
+      <Nav profile={profile} features={features} />
+      <div className="flex flex-1 flex-col lg:pl-72">
+        <DemoBanner />
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-8 pb-12 sm:px-8 lg:pt-10">{children}</main>
+      </div>
     </div>
   );
 }
