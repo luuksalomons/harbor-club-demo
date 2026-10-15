@@ -25,7 +25,6 @@
       "Bash(bash ~/notify-telegram.sh*)"
     ],
     "deny": [
-      "Bash(git push*)",
       "Bash(git reset --hard*)",
       "Bash(git clean -f*)",
       "Bash(git branch -D*)",
